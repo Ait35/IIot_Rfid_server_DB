@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+
+  postgres-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+
+  adminer:
+    image: adminer
+    ports:
+      - "${ADMINER_PORT}:${ADMINER_PORT}"
+    depends_on:
+      - postgres-db
+
+volumes:
+  postgres_data:
+  pgdata:

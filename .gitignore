@@ -1,0 +1,6 @@
+.env
+node_modules/
+.vscode/
+# ดักไว้ เพราะ มันอาจจะอย่ใน ram
+dist/
+build/
