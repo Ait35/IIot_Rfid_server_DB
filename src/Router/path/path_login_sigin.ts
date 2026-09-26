@@ -1,5 +1,5 @@
 import { Router , Request , Response} from 'express';
-import { Sigin_control , Login_control }from '../Controller/user_control.js';
+import { Sigin_control , Login_control }from '../../Controller/user_control.js';
 
 const router = Router();
 

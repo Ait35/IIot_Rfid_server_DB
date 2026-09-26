@@ -1,12 +1,14 @@
 import { Response , Request} from 'express';
-import { sigin_service } from '../service/sigin_source.js';
-import { login_service } from '../service/login_source.js';
+import { SiginService } from '../service/sigin_source.js';
+import { LoginService } from '../service/login_source.js';
 
 export const Sigin_control = async (req:Request, res:Response) => {
     console.log('----- API action: user control -----');
     try {
         //กรอก data จาก wed ครบเปล่า
         const { university_id , password } = req.body;
+        const ipAddress = req.ip || 'Unknown IP';
+        const userAgent = req.headers['user-agent'] || 'Unknown Device';
 
         if(!university_id || !password){
             console.log('missing university id or password');
@@ -14,7 +16,7 @@ export const Sigin_control = async (req:Request, res:Response) => {
         }
 
         //เรียก service
-        const sigin_res = await sigin_service(university_id, password); //return Json 
+        const sigin_res = await SiginService.sigin(university_id, password , ipAddress, userAgent); //return Json
 
         if(!sigin_res.success){
             console.log('error in sigin service :' , sigin_res);
@@ -37,6 +39,8 @@ export const Login_control = async (req:Request, res:Response) => {
     try {
         //กรอก data จาก wed ครบเปล่า
         const { university_id , password } = req.body;
+        const ipAddress = req.ip || 'Unknown IP';
+        const userAgent = req.headers['user-agent'] || 'Unknown Device';
 
         if(!university_id || !password){
             console.log('missing university id or password');
@@ -44,7 +48,7 @@ export const Login_control = async (req:Request, res:Response) => {
         }
 
         //เรียก service
-        const login_res = await login_service(university_id, password); //return Json 
+        const login_res = await LoginService.login(university_id, password, ipAddress, userAgent); //return Json
 
         if(!login_res.success){
             console.log('error in sigin service :' , login_res);

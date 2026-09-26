@@ -4,10 +4,13 @@ services:
 
   postgres-db:
     image: postgres:15-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+      TZ: Asia/Bangkok                 #ซิ้งเวลาไทย กับ container
+      PGTZ: Asia/Bangkok                #ซิ้งเวลาไทย กับ pg
     ports:
       - "${DB_PORT}:${DB_PORT}"
     volumes:
@@ -16,6 +19,7 @@ services:
 
   adminer:
     image: adminer
+    restart: unless-stopped
     ports:
       - "${ADMINER_PORT}:${ADMINER_PORT}"
     depends_on:

@@ -52,7 +52,8 @@ const mockUniversityDB: UniversityProfile[] = [
         faculty: 'วิศวกรรมศาสตร์',
         department: 'วิศวกรรมคอมพิวเตอร์',
         role: 'student',
-        status: 'active'
+        status: 'active',
+        // status: 'graduated',
     }
 ];
 
