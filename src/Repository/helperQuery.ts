@@ -1,4 +1,5 @@
 import { db } from '../Connect_db/connect_db.js';
+import { PoolClient } from 'pg';
 
 export const Query = {
     async updateToken (user_id:string, accessToken:string){
@@ -14,7 +15,8 @@ export const Query = {
         }
 
         const sql = `
-            UPDATE users SET token = $1 WHERE user_id = $2;
+            UPDATE users SET token = $1 WHERE user_id = $2
+            RETURNING token;
         `;
         const values = [accessToken, user_id];
 
@@ -25,7 +27,7 @@ export const Query = {
                 return { success: false, status: 404, error: 'Record not found' };
             }
             console.log('---- Set Successful! -----');
-            return { success: true, status: 200, token : accessToken };
+            return { success: true, status: 200, token : result.rows[0].token };
         }catch (error) {
             console.error('❌ Update Token error in user query:', error);
             return { success: false, status: 500, error: 'Update Token failed' };
@@ -56,6 +58,43 @@ export const Query = {
             console.error('❌ Update Time error in user query:', error);
             return { success: false, status: 500, error: 'Update Time failed' };
         } 
+    },
+    async Tran_updateToken (user_id:string, accessToken:string , transaction: PoolClient){
+        console.log('----- API action: Transation updateToken  -----');
+        if(!user_id || !accessToken){
+            throw new Error('Missing university id or token');
+        }
+
+        const sql = `
+            UPDATE users SET token = $1 WHERE user_id = $2
+            RETURNING token;
+        `;
+        const values = [accessToken, user_id];
+
+        const result = await transaction.query(sql, values); 
+        //console.log(result);
+        if (result.rowCount === 0) {
+            throw new Error('Update Token failed');
+        }
+        console.log('---- Set Successful! -----');
+        return result.rows[0].token;
+    },
+    async Tran_updateTime(tableName:string , field_traget : string, where : string , id:number , transaction: PoolClient) {
+        console.log('----- API action: Transation updateTime  -----');
+
+        const sql = `
+            UPDATE ${tableName} SET ${field_traget} = NOW()
+            WHERE ${where} = $1
+            RETURNING ${field_traget};
+            `;
+        const values = [id];
+        
+        const result = await transaction.query(sql , values);
+        if (result.rowCount === 0) {
+           throw new Error('Update Time failed');
+        }
+
+        console.log('---- Update Successful! -----');
     },
 
     async SetDelete(tableName:string , where : string , id:number , is_delete : boolean) {

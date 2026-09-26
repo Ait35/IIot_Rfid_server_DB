@@ -20,6 +20,9 @@ export const authMiddleware = (req:Request, res:Response, next:NextFunction) => 
         const decoded = HelperService.verifyToken(token);
         (req as any).payload = decoded; //.ใส่ user id ที่เกะจาก token ไว้ที่ key payload (เป็น key ตั้งใหม่)
         console.log(decoded);
+        if(!decoded) {
+            return res.status(401).json({ message: 'unauthorized 401' });
+        }
 
         next();
     } catch (error) {

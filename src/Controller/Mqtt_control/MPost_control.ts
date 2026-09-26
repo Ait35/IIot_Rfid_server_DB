@@ -24,7 +24,7 @@ export const MPost_control = async (req:Request, res:Response) => {
             return res.status(mqtt_res.status).json(mqtt_res);
         }
         console.log('✅ Add MQTT Successful!');
-
+        return res.status(200).json(mqtt_res);
     } catch (error) {
         console.error('error in mqtt control');
         res.status(500).json({ error: 'error in mqtt control' });

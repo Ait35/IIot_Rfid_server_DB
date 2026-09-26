@@ -59,8 +59,8 @@ export const Login_control = async (req:Request, res:Response) => {
         console.log('✅ Login success');
         res.status(200).json(login_res);
     } catch (error) {
-        console.error('error in user control');
-        res.status(500).json({ error: 'error in user control' });
+        console.error(error);
+        res.status(500).json({ error});
     } finally {
         console.log(`============================================`);
     }
