@@ -1,7 +1,8 @@
-import { fetch_data } from '../External_api/pull_apt.js';
-import { SiginQuery } from '../Repository/userQuery/siginQuery.js';
-import HelperService from './helper_func.js';
-import { ActivityLogService } from '../Repository/Activity_Log/ActivityQuery.js';
+import { fetch_data } from '../../External_api/pull_apt.js';
+import { SiginQuery } from '../../Repository/userQuery/siginQuery.js';
+import { Helper } from '../Group_service.js';
+import HelperService from '../helper_func.js';
+import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
 
 export class SiginService {
     static async sigin(university_id : string, password : string , ip:string , userAgent:string) {
@@ -29,16 +30,26 @@ export class SiginService {
                 console.log('You are not student of university :' , university_id);
                 return {success : false, status : 400, error: `You are not student of university : ${university_id}`};
             }
-            const accessToken = HelperService.genToken(university_id);
-    
+            // insert user
             const result = await SiginQuery.insertUser (
                 university_id, 
                 password, 
                 profile.role, 
                 profile.first_name, 
-                profile.last_name,
-                accessToken
+                profile.last_name
             );
+
+            if(!result.success){
+                console.log(result.error);
+                return result;
+            }
+            //Generate Token ใหม่
+            const accessToken = await Helper.Query.updateToken(result.data.user_id , HelperService.genToken(result.data.user_id));
+            if(!accessToken.success){
+                console.log(accessToken.error);
+                return accessToken;
+            }
+            
             console.log(`--- status : ${result.status} ---`);
 
             ActivityLogService.Insert_logAction(result.data.user_id, 'SIGIN', 'User', result.data.user_id, {

@@ -1,6 +1,6 @@
 import { Response , Request} from 'express';
-import { SiginService } from '../service/sigin_source.js';
-import { LoginService } from '../service/login_source.js';
+import { SiginService } from '../service/AccoutService/sigin_source.js';
+import { LoginService } from '../service/AccoutService/login_source.js';
 
 export const Sigin_control = async (req:Request, res:Response) => {
     console.log('----- API action: user control -----');

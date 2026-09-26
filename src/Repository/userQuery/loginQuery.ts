@@ -1,8 +1,8 @@
 import { db } from '../../Connect_db/connect_db.js';
 
 //login
-export class LoginQuery {
-    static async Login (university_id:string, password:string) {
+export const LoginQuery = {
+    async Login (university_id:string, password:string) {
         console.log('----- API action: findUser  -----');
         if (!db) {
             return { success: false, status: 500, error: 'Database not connected' };

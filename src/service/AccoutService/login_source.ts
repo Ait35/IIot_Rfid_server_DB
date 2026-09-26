@@ -1,8 +1,8 @@
-import { fetch_data } from '../External_api/pull_apt.js';
-import { LoginQuery } from '../Repository/userQuery/loginQuery.js';
-import { ActivityLogService } from '../Repository/Activity_Log/ActivityQuery.js';
-import { HelperQuery } from '../Repository/helperQuery.js';
-import  HelperService  from './helper_func.js';
+import { fetch_data } from '../../External_api/pull_apt.js';
+import { LoginQuery } from '../../Repository/userQuery/loginQuery.js';
+import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
+import { Helper } from '../Group_service.js';
+import  HelperService  from '../helper_func.js';
 
 export class LoginService {
     static async login (university_id : string, password : string , ip:string , userAgent:string) {
@@ -18,19 +18,23 @@ export class LoginService {
             }
             //ตรวจสอบ token ว่าไม่หมดอายุ ไม่หมดก็จบ fucntion
             const userInfo = res_db.data;
-            await HelperQuery.updateTime('Users', 'last_login_at', 'user_id', userInfo.user_id);
+            await Helper.Query.updateTime('Users', 'last_login_at', 'user_id', userInfo.user_id);
 
-            if(HelperService.verifyToken(userInfo.token)){
+            const auth = HelperService.verifyToken(userInfo.token)
+            if(auth != null){//ไม่หมดอายุ
                 console.log('---- Token is valid! ----');
                 console.log(`--- stauts : ${res_db.status} ---`);
-            
-                ActivityLogService.Insert_logAction(userInfo.user_id, 'LOGIN', 'User', userInfo.user_id, {
+
+                ActivityLogService.Insert_logAction(userInfo.user_id, 'LOGIN', 'User', auth.user_id, {
                     university_id : userInfo.university_id,
                     role_at_login : userInfo.role,
                     ip_address : ip,
                     user_agent : userAgent
                 });
-                
+                if(auth.user_id != userInfo.user_id){
+                    console.log('Who token ?');
+                    return {success : false, status : 401, error: `Who token ?`};
+                }
                 console.log('----- Add System Log Successful! -----');
                 return res_db; //json เดิม เพราะ มี return เหมือนกันเป๊ะ
             }
@@ -43,15 +47,17 @@ export class LoginService {
                 return {success : false,status : 400, error: 'not data from api'};
             }
 
-            //data จาก api
+            //data จาก api ตรวจสอบว่าเป็นคนของ ม. ไหม
             const profile = res_api.data;
             if(!profile.status || profile.status === 'graduated' || profile.status === 'suspended'){
-                console.log(await HelperQuery.SetDelete('Users', 'user_id', userInfo.user_id , true));
+
+                console.log(await Helper.Query.SetDelete('Users', 'user_id', userInfo.user_id , true));
                 console.log('You are not student of university :' , university_id);
                 return {success : false, status : 400, error: `You are not student of university : ${university_id}`};
             }
 
-            const result = await HelperQuery.updateToken(university_id ,HelperService.genToken(university_id));
+            //generate token ใหม่
+            const result = await Helper.Query.updateToken(userInfo.user_id , HelperService.genToken(userInfo.user_id));
             if(!result.success){
                 console.log(result.error);
                 return result;

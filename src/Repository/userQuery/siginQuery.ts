@@ -1,8 +1,10 @@
 import { db } from '../../Connect_db/connect_db.js';
+// import HelperService from '../../service/helper_func.js';
+// import {HelperQuery} from '../helperQuery.js';
 
-export class SiginQuery {
-    static async insertUser (university_id:string, password:string, role:string ,
-        first_name:string , last_name:string , accessToken:string){
+export const SiginQuery = {
+    async insertUser (university_id:string, password:string, role:string ,
+        first_name:string , last_name:string ){
 
         console.log('----- API action: insertUser  -----');
         if (!db) {
@@ -11,19 +13,22 @@ export class SiginQuery {
         // chack ว่าโดน soft delete ไหม
         if(await softDelete(university_id , db)){
             console.log('----- Is old user -----');  
-            const sql_Update = `UPDATE users SET is_delete = FALSE , token = $2 WHERE university_id = $1
+            const sql_Update = `UPDATE users SET is_delete = FALSE WHERE university_id = $1
             RETURNING *;`;
-            const result_update = await db.query(sql_Update, [university_id , accessToken]);
+            const result = await db.query(sql_Update, [university_id]);
+            if(result.rowCount === 0){
+                return { success: false, status: 400, error: `Failed to insert user` };
+            }
             console.log('----- Activate old Account -----');
-            return { success: true, status: 200, data: result_update.rows[0] };
+            return { success: true, status: 200, data: result.rows[0] };
         }
 
         const sql = `
-            INSERT INTO users (university_id, password, role, first_name, last_name , token) 
-            VALUES ($1, $2, $3, $4, $5 , $6)
+            INSERT INTO users (university_id, password, role, first_name, last_name) 
+            VALUES ($1, $2, $3, $4, $5)
             RETURNING *;
         `;
-        const values = [university_id, password, role, first_name, last_name , accessToken];
+        const values = [university_id, password, role, first_name, last_name ];
 
         try { 
             const result = await db.query(sql, values);
@@ -42,7 +47,7 @@ export class SiginQuery {
             }
             return { success: false, status: 500, error: 'error in user query' };
         } 
-    };
+    },
 
 }
 

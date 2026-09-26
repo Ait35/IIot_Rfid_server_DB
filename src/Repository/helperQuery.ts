@@ -1,11 +1,11 @@
 import { db } from '../Connect_db/connect_db.js';
 
-export class HelperQuery {
-    static async updateToken (university_id:string, accessToken:string){
+export const Query = {
+    async updateToken (user_id:string, accessToken:string){
         console.log('----- API action: updateToken  -----');
-        if(!university_id || !accessToken){
+        if(!user_id || !accessToken){
             console.log('Missing university id or token');
-            console.log('university id :' , university_id);
+            console.log('user id :' , user_id);
             console.log('access token :' , accessToken);
             return { success: false, status: 400, error: 'Missing university id or token' };
         }
@@ -14,13 +14,14 @@ export class HelperQuery {
         }
 
         const sql = `
-            UPDATE users SET token = $1 WHERE university_id = $2;
+            UPDATE users SET token = $1 WHERE user_id = $2;
         `;
-        const values = [accessToken, university_id];
+        const values = [accessToken, user_id];
 
         try { 
             const result = await db.query(sql, values); //ถ้า error ลง catch
-            if (result.rows.length === 0) {
+            console.log(result);
+            if (result.rowCount === 0) {
                 return { success: false, status: 404, error: 'Record not found' };
             }
             console.log('---- Set Successful! -----');
@@ -29,9 +30,9 @@ export class HelperQuery {
             console.error('❌ Update Token error in user query:', error);
             return { success: false, status: 500, error: 'Update Token failed' };
         } 
-    };
+    },
     
-    static async updateTime(tableName:string , field_traget : string, where : string , id:number) {
+    async updateTime(tableName:string , field_traget : string, where : string , id:number) {
         console.log('----- API action: updateTime  -----');
         if (!db) {
             return { success: false, status: 500, error: 'Database not connected' };
@@ -55,9 +56,9 @@ export class HelperQuery {
             console.error('❌ Update Time error in user query:', error);
             return { success: false, status: 500, error: 'Update Time failed' };
         } 
-    };
+    },
 
-    static async SetDelete(tableName:string , where : string , id:number , is_delete : boolean) {
+    async SetDelete(tableName:string , where : string , id:number , is_delete : boolean) {
         console.log('----- API action: SetDelete  -----');
         if (!db) {
             return { success: false, status: 500, error: 'Database not connected' };

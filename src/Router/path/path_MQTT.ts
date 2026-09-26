@@ -1,10 +1,12 @@
 import { Router , Request , Response} from 'express';
-import { Sigin_control , Login_control }from '../../Controller/user_control.js';
+import{authMiddleware } from '../../Middlewares/auth.middleware.js';
+import { MPost_control } from '../../Controller/Mqtt_control/MPost_control.js';
+import { MGet_control } from '../../Controller/Mqtt_control/Mget_control.js';
 
 const router = Router();
 
-router.post('/iiot/post/mqtt',  );
-router.get('/iiot/get/mqtt',  );
-router.patch('/iiot/patch/mqtt',  );
+router.post('/iiot/post/mqtt', authMiddleware , MPost_control );
+router.get('/iiot/get/mqtt',  authMiddleware , MGet_control );
+// router.patch('/iiot/patch/mqtt',  );
 
 export default router;
