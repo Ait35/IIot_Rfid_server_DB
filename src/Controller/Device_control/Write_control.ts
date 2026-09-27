@@ -25,7 +25,7 @@ export const device_post_control = async (req:Request, res:Response) => {
             console.log(device_res);
             return res.status(device_res.status).json(device_res);
         }
-        console.log('✅ Add MQTT Successful!');
+        console.log('✅ Add Device Successful!');
         return res.status(200).json(device_res);
     } catch (error) {
         console.error('error in mqtt control');

@@ -1,6 +1,7 @@
 import { PoolClient } from 'pg';
 
  export const insertDevice = async (
+        key_api : string,
         device_name : string, 
         mac : string, 
         local : string ,
@@ -14,11 +15,11 @@ import { PoolClient } from 'pg';
         if(!transaction) throw new Error('ไม่มีการเชื่อมต่อกับ DB ได้');
     
         const sql = `
-            INSERT INTO device_info (device_name, mac, ip, gate_way, subnet, local, by_user_id)
-            VALUES ($1, $2, $3, $4, $5 , $6, $7)
-            RETURNING *;
+            INSERT INTO device_info (key_api, device_name, mac, ip, gate_way, subnet, local, by_user_id)
+            VALUES ($1, $2, $3, $4, $5 , $6, $7 , $8)
+            RETURNING device_name , mac , ip , gate_way , subnet , local , by_user_id;
         `;
-        const values = [device_name, mac, ip, gateway, subnet, local, by_user_id];
+        const values = [key_api, device_name, mac, ip, gateway, subnet, local, by_user_id];
         try{
             
             const result = await transaction.query(sql, values);

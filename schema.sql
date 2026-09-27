@@ -15,7 +15,7 @@ CREATE TABLE Users (
     created_at    TIMESTAMP(0) DEFAULT CURRENT_TIMESTAMP(0), -- ปรับให้ออโต้
     last_login_at TIMESTAMP(0) DEFAULT CURRENT_TIMESTAMP(0),
     is_delete     BOOLEAN DEFAULT FALSE,       
-    token         VARCHAR(255)     
+    token         VARCHAR(255) UNIQUE
 );
 
 CREATE TABLE Device_info (
@@ -30,7 +30,9 @@ CREATE TABLE Device_info (
     up_time      TIMESTAMP(0),
     Local        VARCHAR(255) NOT NULL,
     created_at   TIMESTAMP(0) DEFAULT CURRENT_TIMESTAMP(0), -- ปรับให้ออโต้
-    is_delete    BOOLEAN DEFAULT FALSE,       
+    is_delete    BOOLEAN DEFAULT FALSE, 
+    status       BOOLEAN DEFAULT FALSE,
+    key_api      VARCHAR(255) NOT NULL UNIQUE,
 
     CONSTRAINT fk_device_user
         FOREIGN KEY (By_user_id)

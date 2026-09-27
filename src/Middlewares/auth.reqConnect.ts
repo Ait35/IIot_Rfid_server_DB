@@ -1,36 +1,57 @@
 import { Request, Response, NextFunction } from 'express';
-import HelperService from '../service/helper_func.js';
+import { QueryRedis } from '../Repository/QueryRedis.js';
+import { Helper } from '../service/Group_service.js';
 
-export const Auth_reqConnect = async (req: Request, res: Response, next:NextFunction) => {
+export const Auth_reqConnect = async (req: Request, res: Response, next: NextFunction) => {
     console.log('----- API action: authMiddleware -----');
-    const authHeader = req.headers.authorization;
+    let api_key  = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ message: 'Unauthorized: ไม่พบ Token' });
+    if (!api_key) {
+        return res.status(401).json({ message: 'Unauthorized: ไม่พบ API Key' });
     }
-    const token = authHeader.split(' ')[1];
-    console.log('Token :', token);
+    if (api_key.startsWith('Bearer ')) {
+        api_key = api_key.split(' ')[1] as string;
+    }
+    console.log('API Key :', api_key);
 
-    if (!token) {
-        return res.status(401).json({ message: 'กรุณาใช้ Token เข้าสู่ระบบ' });
-    }
     try {
-        const decoded = HelperService.verifyToken(token);
-        console.log(decoded);
-        if(!decoded) {
-            return res.status(401).json({ message: 'unauthorized 401' });
+        const cache_result = await QueryRedis.getDeviceCache(api_key);
+
+        if (cache_result.success && cache_result.status === 200) {
+            console.log('----- Cache Hit! ข้ามการค้น Database -----');
+        
+            (req as any).deviceConfig = cache_result.data; 
+            return next();
         }
 
-        (req as any).payload = decoded;
-        next();
-    } catch (error) {
-            res.status(401).json({ message: 'กรุณาใช้ Token เข้าสู่ระบบ' });
+        if (cache_result.status === 404) {
+            console.log('----- Cache Miss: Call to Database -----');
+            const db_data = await Helper.Query.getData('Device_info', 'key_api', api_key, true);
+
+            if (!db_data.success && db_data.status === 404) {
+                console.log('Failed: API Key not found in DB');
+                return res.status(401).json({ message: 'Unauthorized: API Key ไม่ถูกต้อง' });
+            }
+
+            if (!db_data.success && db_data.status === 500) {
+                return res.status(500).json({ message: 'Database error' });
+            }
+
+            console.log('Call to database success');
+            const mqtt_data = await Helper.Query.getData('Mqtt', 'config_device', db_data.data.device_id, true);
+    
+            if(!mqtt_data.success && mqtt_data.status === 404){
+                console.log('🔧  Device is not have config Mqtt');
+                return next();
+            }
+            await QueryRedis.setDeviceCache(api_key, mqtt_data.data);
+
+            (req as any).deviceConfig = mqtt_data.data;
+            return next();
         }
+        
+    } catch (error) {
+        console.error('Middleware Auth Error:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
 };
-// return res.json({
-//         mqtt_server: "192.168.1.100", // หรือ Domain name ของคุณ
-//         mqtt_port: 1883,
-//         mqtt_user: device.mqtt_user,
-//         mqtt_pass: device.mqtt_pass,
-//         topic_pub: device.topic
-//     });

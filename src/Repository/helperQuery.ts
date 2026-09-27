@@ -160,5 +160,33 @@ export const Query = {
             console.log('---- Restore failed! -----');
             return { success: false, status: 500, error: 'Restore failed' };
         }
+    },
+    async getData(tableName:string , where : string , value:string | number ,has_is_delete:boolean) {
+        console.log('----- API action: getDataOne  -----');
+        if (!db) {
+            return { success: false, status: 500, error: 'Database not connected' };
+        }
+        let sql : string;
+        const values = [value];
+        
+        if(has_is_delete){
+            sql = `SELECT * FROM ${tableName} WHERE ${where} = $1 AND is_delete = FALSE`;
+        } else {
+            sql = `SELECT * FROM ${tableName} WHERE ${where} = $1`;
+        }
+
+        try { 
+            const result = await db.query(sql, values);
+
+            if (result.rowCount === 0) {
+                return { success: false, status: 404, error: 'Record not found' };
+            }
+
+            console.log('---- Get Successful! -----');
+            return { success: true, status: 200, data: result.rows[0] };
+        } catch (error) {
+            console.error('❌ Database in getDataOne:', error);
+            return { success: false, status: 500, error: 'Failed to get data' };
+        }
     }
 }

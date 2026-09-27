@@ -17,6 +17,11 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
 
+  redis-cache:
+    image: redis:alpine
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+
   adminer:
     image: adminer
     restart: unless-stopped

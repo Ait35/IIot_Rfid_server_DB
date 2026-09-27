@@ -1,6 +1,8 @@
 import { DeviceQuery } from '../Group_service.js'
+import { Helper } from '../Group_service.js';
 import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
 import { db } from '../../Connect_db/connect_db.js';
+import { QueryRedis } from '../../Repository/QueryRedis.js';
 
 export const DeviceWrite = {
     async post_device(device_name : string, mac : string, local : string , by_user_id: string,
@@ -10,10 +12,12 @@ export const DeviceWrite = {
             return { success: false, status: 500, error: 'Database not connected' };
         }
         const transaction = await db.connect();
+        const key_api = Helper.Service.GenKeyApi();
 
         try{
             await transaction.query('BEGIN');
             const res_query = await DeviceQuery.QueryWrite.insertDevice(
+                key_api,
                 device_name, 
                 mac, 
                 local , 

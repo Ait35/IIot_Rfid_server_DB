@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 export interface ITokenPayload {
     user_id: string; //ให้ สัญญาวาเป็นรูปแบบ ojb นี้แน่นอน
@@ -24,6 +25,10 @@ const Service = {
             console.log('Token expired or invalid');
             return null; // ถ้าพัง คืนค่า null 
         }
+    },
+    GenKeyApi (){
+        const randomString = crypto.randomBytes(32).toString('hex');
+        return `dev_${randomString}`;
     }
 }
 
