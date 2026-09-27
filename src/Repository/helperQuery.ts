@@ -96,6 +96,35 @@ export const Query = {
 
         console.log('---- Update Successful! -----');
     },
+        async Tran_SetDelete(tableName:string , where : string , id:number , is_delete : boolean , transaction: PoolClient) {
+        console.log('----- API action: SetDelete  -----');
+
+        const sql = `
+            UPDATE ${tableName} SET  is_delete = $2
+            WHERE ${where} = $1
+            RETURNING is_delete;
+            `;
+        const values = [id , is_delete];
+
+        try { 
+            const result = await transaction.query(sql , values);
+
+            if(is_delete){
+                console.log('---- Delete Successful! -----');
+            }else{
+                console.log('---- Restore Successful! -----');
+            }
+            return { success: true, status: 200, is_delete : result.rows[0].is_delete };
+        }catch (error) {
+            if(is_delete){
+                console.log('---- Delete failed! -----');
+                throw new Error('Delete failed');
+            }
+
+            console.log('---- Restore failed! -----');
+            throw new Error('Restore failed');
+        }
+    },
 
     async SetDelete(tableName:string , where : string , id:number , is_delete : boolean) {
         console.log('----- API action: SetDelete  -----');

@@ -1,11 +1,11 @@
-import { MqttQuery } from '../../Repository/MqttQuery/QueryMqtt.js';
+import { MqttQuery } from '../Group_service.js'
 import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
 
- export const Mqttget = {
+ export const MqttRead = {
     async get_mqtt(page: number, limit: number, userId: number, ip: string, userAgent: string) {
         console.log('----- API action: get_mqtt service -----');
         try{
-            const res_query = await MqttQuery.getMqtt(page , limit );
+            const res_query = await MqttQuery.QueryRead.getMqtt(page , limit );
             if(!res_query.success){
                 console.log(res_query);
                 return res_query;

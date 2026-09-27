@@ -1,11 +1,25 @@
-import { Mqttpost } from './mqttService/post_mqtt.js';
-import { Mqttget } from './mqttService/get_mqtt.js';
+import { MqttWrite } from './mqttService/Write_mqtt.js';
+import { MqttRead } from './mqttService/Read_mqtt.js';
 import Service from './helper_func.js';
+import {getMqtt} from '../Repository/MqttQuery/ReadQuery.js';
+import {insertMqtt} from '../Repository/MqttQuery/InsertQuery.js';
+import {updateMqtt} from '../Repository/MqttQuery/updataQuery.js';
 import { Query } from '../Repository/helperQuery.js';
 
 export const  MqttService = {
-    post : Mqttpost,
-    get : Mqttget
+    MqttWrite : MqttWrite,
+    MqttRead : MqttRead
+}
+export const  MqttQuery = {
+    QueryWrite : 
+    {
+        insertMqtt , 
+        updateMqtt
+    },
+    QueryRead: 
+    {
+        getMqtt
+    }
 }
 
 export const Helper = {

@@ -1,8 +1,8 @@
 import { db } from '../../Connect_db/connect_db.js';
 
-export const MqttQuery = {
-    async getMqtt(page: number, limit: number) {
-        console.log('----- API action: QueryMqtt service -----');
+export const getMqtt = async (page: number, limit: number) =>
+    {
+        console.log('----- API action: ReadyMqtt Query -----');
         if (!db) {
             return { success: false, status: 500, error: 'Database not connected' };
         }
@@ -23,4 +23,3 @@ export const MqttQuery = {
             return { success: false, status: 500, error: 'Failed to get data Mqtt' };
         }
     }
-}
