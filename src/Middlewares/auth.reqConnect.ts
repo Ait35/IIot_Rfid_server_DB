@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import HelperService from '../service/helper_func.js';
 
-export const reqConnectController = async (req: Request, res: Response, next:NextFunction) => {
+export const Auth_reqConnect = async (req: Request, res: Response, next:NextFunction) => {
     console.log('----- API action: authMiddleware -----');
     const authHeader = req.headers.authorization;
 

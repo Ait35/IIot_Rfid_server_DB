@@ -5,6 +5,13 @@ import {getMqtt} from '../Repository/MqttQuery/ReadQuery.js';
 import {insertMqtt} from '../Repository/MqttQuery/InsertQuery.js';
 import {updateMqtt} from '../Repository/MqttQuery/updataQuery.js';
 import { Query } from '../Repository/helperQuery.js';
+import { DeviceWrite } from './DeviceService/write.device.js';
+import { insertDevice } from '../Repository/DeviceQuery/insert.Device.js';
+
+export const Helper = {
+    Service : Service,
+    Query : Query
+};
 
 export const  MqttService = {
     MqttWrite : MqttWrite,
@@ -22,7 +29,12 @@ export const  MqttQuery = {
     }
 }
 
-export const Helper = {
-    Service : Service,
-    Query : Query
-};
+export const  DeviceService = {
+    DeviceWrite : DeviceWrite
+}
+export const  DeviceQuery = {
+    QueryWrite : 
+    {
+        insertDevice
+    }
+}
