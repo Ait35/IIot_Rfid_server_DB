@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { QueryRedis } from '../Repository/QueryRedis.js';
-import { Helper } from '../service/Class_service.js';
+import { QueryRedis } from '../Repository/cache.js';
+import { getData } from '../Repository/Read.js';
 
 export const Auth_reqConnect = async (req: Request, res: Response, next: NextFunction) => {
     console.log('----- API action: authMiddleware -----');
@@ -19,14 +19,14 @@ export const Auth_reqConnect = async (req: Request, res: Response, next: NextFun
 
         if (cache_result.success && cache_result.status === 200) {
             console.log('----- Cache Hit! ข้ามการค้น Database -----');
-        
+            console.log(cache_result.data);
             (req as any).deviceConfig = cache_result.data; 
-            return next();
+            return res.status(200).json(cache_result.data);
         }
 
         if (cache_result.status === 404) {
             console.log('----- Cache Miss: Call to Database -----');
-            const db_data = await Helper.Query.getData('Device_info', 'key_api', api_key, true);
+            const db_data : any = await getData('Device_info', 'key_api', api_key, true);
 
             if (!db_data.success && db_data.status === 404) {
                 console.log('Failed: API Key not found in DB');
@@ -36,18 +36,16 @@ export const Auth_reqConnect = async (req: Request, res: Response, next: NextFun
             if (!db_data.success && db_data.status === 500) {
                 return res.status(500).json({ message: 'Database error' });
             }
-
-            console.log('Call to database success');
-            const mqtt_data = await Helper.Query.getData('Mqtt', 'config_device', db_data.data.device_id, true);
+            const mqtt_data = await getData('Mqtt', 'group_id', db_data.data.group_id, true);
     
             if(!mqtt_data.success && mqtt_data.status === 404){
                 console.log('🔧  Device is not have config Mqtt');
-                return next();
+                return res.status(200).json({ message: 'Device is not have config Mqtt' });
             }
             await QueryRedis.setDeviceCache(api_key, mqtt_data.data);
-
-            (req as any).deviceConfig = mqtt_data.data;
-            return next();
+            
+            // (req as any).deviceConfig = mqtt_data.data;
+            return res.status(200).json(mqtt_data.data);
         }
         
     } catch (error) {

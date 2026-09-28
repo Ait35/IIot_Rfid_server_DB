@@ -1,4 +1,4 @@
-import { db } from '../Connect_db/connect_db.js';
+import { db } from '../Infra/connect_db.js';
 
 //login
 export const LoginQuery = {

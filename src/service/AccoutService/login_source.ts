@@ -1,5 +1,5 @@
 import { fetch_data } from '../../External_api/pull_apt.js';
-import { db } from '../../Connect_db/connect_db.js';
+import { db } from '../../Infra/connect_db.js';
 import { LoginQuery } from '../../Repository/loginQuery.js';
 import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
 import { Helper } from '../Class_service.js';

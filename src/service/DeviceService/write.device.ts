@@ -1,7 +1,7 @@
 // import { DeviceQuery } from '../Class_service.js'
 import { Helper } from '../Class_service.js';
 import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
-import { db } from '../../Connect_db/connect_db.js';
+import { db } from '../../Infra/connect_db.js';
 import { InsertData } from '../../Repository/insertQuery.js';
 
 interface user_req {

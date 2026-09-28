@@ -1,5 +1,5 @@
 // import { MqttQuery } from '../Class_service.js'
-import { db } from '../../Connect_db/connect_db.js';
+import { db } from '../../Infra/connect_db.js';
 import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
 import { Helper } from '../Class_service.js';
 import { InsertData } from '../../Repository/insertQuery.js';

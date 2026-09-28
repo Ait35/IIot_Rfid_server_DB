@@ -3,8 +3,8 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
-import { connect_DB } from './Connect_db/connect_db.js';
-import redis from './Connect_db/connect_redis.js';
+import { connect_DB } from './Infra/connect_db.js';
+import redis from './Infra/connect_redis.js';
 import Router from './Router/Export_router.js';
 
 const app = express();

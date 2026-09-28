@@ -1,4 +1,4 @@
-import redis from '../Connect_db/connect_redis.js';
+import redis from '../Infra/connect_redis.js';
 
 export const QueryRedis = {
     async setDeviceCache(api_key: string, deviceData: any) {
@@ -17,7 +17,7 @@ export const QueryRedis = {
             const result = await redis.set(key, stringData, {
                 EX: 3600 // ]ลบออกใน 1 ชั่วโมง
             });
-
+        
             console.log(`Saved Cache for ${api_key} -> result:`, result);
             return { success: true, status: 200, data: result };
         } catch (error) {
@@ -44,7 +44,6 @@ export const QueryRedis = {
             }
 
             const deviceData = JSON.parse(resultString);
-            console.log('----- Cache Hit! -----');
             
             return { success: true, status: 200, data: deviceData };
         } catch (error) {
