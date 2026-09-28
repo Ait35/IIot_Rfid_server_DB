@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { QueryRedis } from '../Repository/QueryRedis.js';
-import { Helper } from '../service/Group_service.js';
+import { Helper } from '../service/Class_service.js';
 
 export const Auth_reqConnect = async (req: Request, res: Response, next: NextFunction) => {
     console.log('----- API action: authMiddleware -----');

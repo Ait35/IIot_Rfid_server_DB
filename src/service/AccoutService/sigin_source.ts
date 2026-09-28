@@ -1,9 +1,17 @@
 import { fetch_data } from '../../External_api/pull_apt.js';
 import { db } from '../../Connect_db/connect_db.js';
-import { SiginQuery } from '../../Repository/userQuery/siginQuery.js';
-import { Helper } from '../Group_service.js';
+import { Helper } from '../Class_service.js';
 import HelperService from '../helper_func.js';
 import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
+import { InsertData } from '../../Repository/insertQuery.js';
+
+interface user_req {
+    university_id: string;
+    password: string;
+    role: string;
+    first_name: string;
+    last_name: string;
+}
 
 export const SiginService = {
     async sigin(university_id : string, password : string , ip:string , userAgent:string) {
@@ -31,18 +39,19 @@ export const SiginService = {
             console.log('You are not student of university :' , university_id);
             return {success : false, status : 400, error: `You are not student of university : ${university_id}`};
         }
+        const req : user_req = {
+            university_id,
+            password,
+            role: profile.role,
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+        }
+
         const transaction = await db.connect();
         try {
             await transaction.query('BEGIN');
             // insert user
-            const result = await SiginQuery.insertUser (
-                university_id, 
-                password, 
-                profile.role, 
-                profile.first_name, 
-                profile.last_name,
-                transaction
-            );
+            const result = await InsertData('Users', req as any , transaction);
 
             //Generate Token ใหม่
             const accessToken = HelperService.genToken(result.data.user_id);

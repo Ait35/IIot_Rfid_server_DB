@@ -1,35 +1,37 @@
-import { db } from '../../Connect_db/connect_db.js';
 import { PoolClient } from 'pg';
 
-export const updateMqtt = async (
+export const updateData = async (
+    tableName:string ,
+    target_name_id:string ,
+    target_id:number ,
     user_req: Record<string, string | number | boolean>, 
     transaction: PoolClient) => 
     {
-        console.log('----- API action: Update Mqtt Query -----');
+        console.log('----- API action: Update Query -----');
     
         let current_index = 0;
-        let sql = `UPDATE mqtt SET `;
+        let sql = `UPDATE ${tableName} SET `;
         let values : any[] = [];
         Object.keys(user_req).forEach((key)=> {
-            if(key === 'mqtt_id' || key === 'is_delete') return ;
+            if(key === 'is_delete') return ;
             current_index++;
-            sql += `${key} = $${current_index} , `;
+            sql += `${key} = $${current_index} ,`;
             values.push(user_req[key]);
         });
-        values.push(user_req.mqtt_id);
-        sql += `is_delete = FALSE WHERE mqtt_id = $${current_index+1};`;
+        values.push(target_id);
+        sql = sql.slice(0, -1) + ` WHERE is_delete = FALSE AND ${target_name_id} = $${current_index+1};`;
         console.log('SQL :' , sql);
         console.log('values :' , values);
         try{
             const result = await transaction.query(sql, values);
             if(result.rowCount === 0){
-                throw new Error('Failed to update mqtt');
+                throw new Error('Failed to update group');
             }
 
             return { success: true, status: 200, data: result.rows[0] };
         }catch(error : any){
             if(error.code === '23505'){
-                throw new Error(`Device is config already try again : ` , error);
+                throw new Error(`This data in ${tableName} already exists. Please try again.`, { cause: error });
             }
             throw error;
         }

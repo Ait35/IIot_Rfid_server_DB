@@ -1,25 +1,26 @@
 import { Response , Request} from 'express';
-import{ DeviceService } from '../../service/Group_service.js';
+import{ DeviceService } from '../../service/Class_service.js';
 
 export const device_post_control = async (req:Request, res:Response) => {
     console.log('----- API action: Post Device control -----');
     const userId = (req as any).payload.user_id;
-    const { device_name, mac, local} = req.body; //ครั้งแรกจากหน้สเว็ปไม่สามารถ config ได่ทั้งหมด
+    const { device_name, mac,  type , group_id, local} = req.body; //ครั้งแรกจากหน้สเว็ปไม่สามารถ config ได้ทั้งหมด
     const ipAddress = req.ip || 'Unknown IP';
     const userAgent = req.headers['user-agent'] || 'Unknown Device';
-
+    
     if(!userId){
         console.log('Missing user id');
         return res.status(400).json({error: 'Missing user id'});
     }
-    if(!device_name || !mac || !local){
+    if(!device_name || !mac || !local || !group_id || !type){
         console.log('Missing data');
+        console.log(device_name, mac, local, group_id, type);
         return res.status(400).json({error: 'Missing data'});
     }
 
     try {
         const device_res = await DeviceService.DeviceWrite.post_device(
-            device_name , mac , local , userId, ipAddress , userAgent
+            device_name , mac , local , userId, group_id, type, ipAddress , userAgent
         );
         if(!device_res.success){
             console.log(device_res);

@@ -1,8 +1,8 @@
 import { fetch_data } from '../../External_api/pull_apt.js';
 import { db } from '../../Connect_db/connect_db.js';
-import { LoginQuery } from '../../Repository/userQuery/loginQuery.js';
+import { LoginQuery } from '../../Repository/loginQuery.js';
 import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
-import { Helper } from '../Group_service.js';
+import { Helper } from '../Class_service.js';
 import  HelperService  from '../helper_func.js';
 
 export const LoginService = {

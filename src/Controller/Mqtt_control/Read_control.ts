@@ -1,5 +1,5 @@
 import { Response , Request} from 'express';
-import{ MqttService } from '../../service/Group_service.js';
+import{ MqttService } from '../../service/Class_service.js';
 
 export const MGet_control = async (req:Request, res:Response) => {
     console.log('----- API action: mqtt control -----');

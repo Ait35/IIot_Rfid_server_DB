@@ -1,26 +1,46 @@
-import { MqttQuery } from '../Group_service.js'
+// import { MqttQuery } from '../Class_service.js'
 import { db } from '../../Connect_db/connect_db.js';
 import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
-import { Helper } from '../Group_service.js';
+import { Helper } from '../Class_service.js';
+import { InsertData } from '../../Repository/insertQuery.js';
+import { updateData } from '../../Repository/updataQuery.js';
+
+interface user_req {
+    mqtt_id?: number; 
+    topic? : string;   
+    group_id?: number;
+    user_mqtt? : string
+    Pass_Mqtt? : string
+    is_delete? : boolean
+    by_user_id?: string
+}
 
 export const MqttWrite = {
-    async post_mqtt(topic:string ,Config_device_id:string , By_user_id:string, 
+    async post_mqtt(topic:string , by_user_id:string,  group_id: number,
         User_Mqtt:string | null = null , Pass_Mqtt:string | null = null , ip:string , userAgent:string) {
-
+        
         console.log('----- API action: post_mqtt service -----');
         if (!db) {
             return { success: false, status: 500, error: 'Database not connected' };
         }
+        const req : user_req = {
+            topic,
+            group_id,
+            by_user_id,
+            ...(User_Mqtt && {user_mqtt : User_Mqtt}),
+            ...(Pass_Mqtt && {pass_mqtt : Pass_Mqtt}),
+        }
+
         const transaction = await db.connect();
 
         try{
             await transaction.query('BEGIN');
-            const res_query = await MqttQuery.QueryWrite.insertMqtt(topic, Config_device_id, By_user_id, 
-                User_Mqtt , Pass_Mqtt , transaction);
+            const res_query = await InsertData( 'mqtt', req as any , transaction);
             console.log('----- Insert Successful! -----');
 
-            await ActivityLogService.Insert_logAction(Number(By_user_id), 'MQTT', 'Mqtt', Config_device_id, {
+            await ActivityLogService.Insert_logAction(Number(by_user_id), 'INSERT', 'Mqtt', res_query.data.Mqtt_id, {
                 topic : topic,
+                config_group : group_id,
                 ip_address : ip,
                 user_agent : userAgent
             }, transaction);
@@ -41,7 +61,7 @@ export const MqttWrite = {
         mqtt_id: number,
         topic: string | undefined, 
         by_user_id: string,
-        config_device_id: string | undefined,
+        group_id: number | undefined,
         user_mqtt: string | undefined,
         pass_mqtt: string | undefined,
         ip: string, 
@@ -50,23 +70,15 @@ export const MqttWrite = {
     {
         console.log('----- API action: update_mqtt service -----');
         console.log(mqtt_id, by_user_id);
-        interface user_req {
-            mqtt_id: number;
-            config_device_id?: string;
-            topic? : string;
-            user_mqtt? : string
-            Pass_Mqtt? : string
-            is_delete? : boolean
-        }
-        const user_req : user_req = {
-            mqtt_id : mqtt_id
-        }
 
-        if (topic !== undefined) user_req.topic = topic;
-        if (config_device_id !== undefined) user_req.config_device_id = config_device_id;
-        if (user_mqtt !== undefined) user_req.user_mqtt = user_mqtt;
-        if (pass_mqtt !== undefined) user_req.Pass_Mqtt = pass_mqtt;
-        if (is_delete !== undefined) user_req.is_delete = is_delete;
+        const user_req : user_req = {
+            //ถ้า group_name ไม่เป็น undefined : ฝั่งขวาจะทำงาน จะได้ Object เป็น { group_name: "ชื่อที่ส่งมา" }
+            ...(topic !== undefined && {topic}), 
+            ...(group_id !== undefined && {group_id}),
+            ...(user_mqtt !== undefined && {user_mqtt}),
+            ...(pass_mqtt !== undefined && {pass_mqtt}),
+            ...(is_delete !== undefined && {is_delete})
+        }
 
         if(!topic && (user_mqtt || pass_mqtt) ) return { success: false, status: 400, error: 'can not update user/pass mqtt without topic' };
         if(pass_mqtt && !user_mqtt) return { success: false, status: 400, error: 'can not update pass mqtt without user mqtt' };
@@ -81,13 +93,13 @@ export const MqttWrite = {
             if(is_delete !== null && is_delete !== undefined){
                 result = await Helper.Query.Tran_SetDelete('mqtt', 'By_user_id', Number(by_user_id) , is_delete , transaction);
             }else{
-                result = await MqttQuery.QueryWrite.updateMqtt(user_req as any , transaction);
+                result = await updateData('mqtt', 'mqtt_id', mqtt_id , user_req as any , transaction);
                 console.log('----- Update Successful! -----');
             }
             
             await ActivityLogService.Insert_logAction(Number(by_user_id), 'UPDATE', 'Mqtt', mqtt_id, {
                 topic : topic,
-                config_device_id: config_device_id,
+                group_id: group_id,
                 user_mqtt: user_mqtt,
                 pass_mqtt: pass_mqtt,
                 ip_address : ip,

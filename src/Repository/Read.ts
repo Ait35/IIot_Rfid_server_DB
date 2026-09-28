@@ -1,4 +1,4 @@
-import { db } from '../../Connect_db/connect_db.js';
+import { db } from '../Connect_db/connect_db.js';
 
 export const getMqtt = async (page: number, limit: number) =>
     {

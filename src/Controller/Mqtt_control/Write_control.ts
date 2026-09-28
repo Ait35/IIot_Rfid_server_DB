@@ -1,10 +1,10 @@
 import { Response , Request} from 'express';
-import{ MqttService } from '../../service/Group_service.js';
+import{ MqttService } from '../../service/Class_service.js';
 
 export const MPost_control = async (req:Request, res:Response) => {
     console.log('----- API action: mqtt control -----');
     const userId = (req as any).payload.user_id;
-    const { topic,config_device_id, user_mqtt ,pass_mqtt} = req.body;
+    const { topic, user_mqtt ,pass_mqtt , group_id} = req.body;
     const ipAddress = req.ip || 'Unknown IP';
     const userAgent = req.headers['user-agent'] || 'Unknown Device';
 
@@ -12,13 +12,13 @@ export const MPost_control = async (req:Request, res:Response) => {
         console.log('Missing user id');
         return res.status(400).json({error: 'Missing user id'});
     }
-    if(!topic || !config_device_id ){
+    if(!topic || !group_id ){
         console.log('Missing data');
         return res.status(400).json({error: 'Missing data'});
     }
 
     try {
-        const mqtt_res = await MqttService.MqttWrite.post_mqtt(topic , config_device_id , userId, user_mqtt , pass_mqtt , ipAddress , userAgent);
+        const mqtt_res = await MqttService.MqttWrite.post_mqtt(topic, userId, group_id ,user_mqtt , pass_mqtt , ipAddress , userAgent);
         if(!mqtt_res.success){
             console.log(mqtt_res);
             return res.status(mqtt_res.status).json(mqtt_res);
@@ -34,7 +34,7 @@ export const MPost_control = async (req:Request, res:Response) => {
 export const Mqtt_updata_control = async (req:Request, res:Response) => {
     console.log('----- API action: updata mqtt  control -----');
     const userId = (req as any).payload.user_id;
-    const {mqtt_id, topic,config_device_id, user_mqtt , pass_mqtt , is_delete} = req.body;
+    const {mqtt_id, topic, group_id, user_mqtt , pass_mqtt , is_delete} = req.body;
     const ipAddress = req.ip || 'Unknown IP';
     const userAgent = req.headers['user-agent'] || 'Unknown Device';
 
@@ -46,9 +46,13 @@ export const Mqtt_updata_control = async (req:Request, res:Response) => {
         console.log('Missing data');
         return res.status(400).json({error: 'Missing data'});
     }
+    if(!topic && !user_mqtt && !pass_mqtt &&  !group_id && is_delete === undefined){
+        console.log('Missing data');
+        return res.status(400).json({error: 'Missing data'});
+    }
 
     try {
-        const mqtt_res = await MqttService.MqttWrite.update_mqtt(mqtt_id ,topic , userId , config_device_id, user_mqtt , 
+        const mqtt_res = await MqttService.MqttWrite.update_mqtt(mqtt_id ,topic , userId , group_id, user_mqtt , 
             pass_mqtt , ipAddress , userAgent, is_delete);
         if(!mqtt_res.success){
             console.log(mqtt_res);
