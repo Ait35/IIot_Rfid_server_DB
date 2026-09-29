@@ -1,4 +1,4 @@
-import redis from '../Infra/connect_redis.js';
+import redis from './connect_redis.js';
 
 export const QueryRedis = {
     async setDeviceCache(api_key: string, deviceData: any) {

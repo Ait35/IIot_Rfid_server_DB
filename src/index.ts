@@ -4,7 +4,9 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import { connect_DB } from './Infra/connect_db.js';
-import redis from './Infra/connect_redis.js';
+import redis from './Infra/Redis/connect_redis.js';
+import { initMqtt } from './Infra/Mqtt.infra.js';
+import { MainLogService } from './service/LogMqttService/write.Log.js';
 import Router from './Router/Export_router.js';
 
 const app = express();
@@ -20,6 +22,10 @@ async function startServer() {
 
     await redis.connect();
     console.log('✅ Connected to Redis');
+
+    await initMqtt.connect();
+
+    initMqtt.callbackMessage( MainLogService.write_log);
 
     app.listen(process.env.PORT, () => {
       console.log('--- Server is running on port', process.env.PORT, '---');

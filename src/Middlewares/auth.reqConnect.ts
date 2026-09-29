@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { QueryRedis } from '../Repository/cache.js';
+import { QueryRedis } from '../Infra/Redis/cache.js';
 import { getData } from '../Repository/Read.js';
 
 export const Auth_reqConnect = async (req: Request, res: Response, next: NextFunction) => {
