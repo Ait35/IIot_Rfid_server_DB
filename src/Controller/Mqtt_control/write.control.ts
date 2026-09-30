@@ -43,8 +43,8 @@ export const Mqtt_updata_control = async (req:Request, res:Response) => {
         return res.status(400).json({error: 'Missing user id'});
     }
     if(!mqtt_id ){
-        console.log('Missing data');
-        return res.status(400).json({error: 'Missing data'});
+        console.log('Missing mqtt id');
+        return res.status(400).json({error: 'Missing mqtt id'});
     }
     if(!topic && !user_mqtt && !pass_mqtt &&  !group_id && is_delete === undefined){
         console.log('Missing data');

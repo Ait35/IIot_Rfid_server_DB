@@ -3,65 +3,102 @@ import { Helper } from '../Class_service.js';
 import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
 import { db } from '../../Infra/connect_db.js';
 import { InsertData } from '../../Repository/insertQuery.js';
+import { updateData } from '../../Repository/updataQuery.js';
 
 interface user_req {
-    key_api: string;
-    device_name: string;
-    mac: string;
-    local: string;
-    group_id: number;
-    device_type: string;
-    by_user_id: string
-    ip: string
-    gate_way : string
-    subnet : string
- } //uptime / status ค่อยรอจาก update
+    by_user_id?: string;
+    device_name?: string;
+    device_type?: string;
+    group_id?: number;
+    mac?: string;
+    ip?: string;
+    subnet?: string;
+    gate_way?: string;
+    timestart?: string;
+    up_time?: string;
+    local?: string;
+    is_delete?: boolean;
+    status?: boolean;
+    key_api?: string;
+ } 
 
 export const DeviceWrite = {
-    async post_device(device_name : string, mac : string, local : string , by_user_id: string, group_id : number,
-        type : string, ip_address : string, userAgent: string) {
-        console.log('----- API action: post_mqtt service -----');
-        if (!db) {
-            return { success: false, status: 500, error: 'Database not connected' };
-        }
-        const req : user_req = {
-            key_api : Helper.Service.GenKeyApi(),
-            device_name,
-            mac,
-            local,
-            group_id,
-            device_type : type,
-            by_user_id,
-            ip : "127.0.0.1",
-            gate_way : "127.0.0.1",
-            subnet : "255.255.255.0"
-        }
-        const transaction = await db.connect();
+    async post_device(
+        device_name: string, mac: string, local: string, by_user_id: string, group_id: number,
+        type: string, ip_address: string, userAgent: string
+    ) {
+        const req = {
+            key_api: Helper.Service.GenKeyApi(),
+            device_name, mac, local, group_id, device_type: type, by_user_id,
+            ip: "127.0.0.1", gate_way: "127.0.0.1", subnet: "255.255.255.0",
+        };
 
-        try{
-            await transaction.query('BEGIN');
-            const res_query = await InsertData('Device_info', req as any , transaction);
-
-            console.log('----- Insert Successful! -----');
-
-            await ActivityLogService.Insert_logAction(Number(by_user_id), 'INSERT', 'device_info',res_query.data.device_id, {
-                device_name : device_name,
-                mac : mac,
-                group_id : group_id,
-                local : local,
-                ip_address : ip_address,
-                user_agent : userAgent
-            }, transaction);
-            await transaction.query('COMMIT');
-
-            console.log('----- Add System Log Successful! -----');
-            return res_query;
-        } catch (error) {
-            await transaction.query('ROLLBACK');
-            console.error('❌ Database ROLLBACK :', error);
-            return { success: false, status: 500, error: 'Failed to insert table Mqtt' };
-        }finally{
-            transaction.release();
-        }
+        return await Helper.Service.executeWithLog(
+            'post_device service', 'device_info', 'INSERT', by_user_id,
+            async (transaction) => {
+                const res_query = await InsertData('device_info', req, transaction);
+                
+                return {
+                    result: res_query,
+                    recordId: res_query.data.device_id, // ส่ง ID กลับไปให้ Helper ทำ Log
+                    logPayload: { device_name, mac, group_id, local, ip_address, user_agent: userAgent }
+                };
+            }
+        );
     },
+    async update_device(
+        device_id : number,
+        device_name : string | undefined ,
+        device_type : string | undefined,
+        group_id: number | undefined,
+        // mac อัพไม่ได้
+        ip:string | undefined,
+        subnet:string | undefined,
+        gate_way:string | undefined,
+        timestart:string | undefined,
+        up_time:string | undefined,
+        local:string | undefined,
+        is_delete:boolean | undefined,
+        status:boolean | undefined,
+        key_api:string | undefined,
+
+        by_user_id: string,
+        ip_address:string,
+        userAgent:string)
+    {
+        
+        const req : user_req = {
+            ...(device_name !== undefined && {device_name}),
+            ...(device_type !== undefined && {device_type}),
+            ...(group_id !== undefined && {group_id}),
+            ...(ip !== undefined && {ip}),
+            ...(subnet !== undefined && {subnet}),
+            ...(gate_way !== undefined && {gate_way}),
+            ...(timestart !== undefined && {timestart}),
+            ...(up_time !== undefined && {up_time}),
+            ...(local !== undefined && {local}),
+            ...(is_delete !== undefined && {is_delete}),
+            ...(status !== undefined && {status}),
+            ...(key_api !== undefined && {key_api})
+        }
+
+        const action = is_delete !== undefined ? (is_delete ? 'DELETE' : 'RESTORE') : 'UPDATE';
+
+        return await Helper.Service.executeWithLog(
+            'update_device service', 'device_info', action, by_user_id,
+            async (transaction) => {
+                let result;
+
+                if (is_delete !== undefined) {
+                    result = await Helper.Query.Tran_SetDelete('device_info', 'device_id', device_id, is_delete, transaction);
+                } else {
+                    result = await updateData('device_info', 'device_id', device_id, req, transaction);
+                }
+                return { 
+                    result, 
+                    recordId: device_id, 
+                    logPayload : { ...req, ip_address, user_agent: userAgent } };
+            }
+        );
+    }
 }

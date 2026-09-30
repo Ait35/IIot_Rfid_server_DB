@@ -46,12 +46,13 @@ export const SiginService = {
             first_name: profile.first_name,
             last_name: profile.last_name,
         }
-
+        const action = 'SIGIN';
+        const table = 'Users';
         const transaction = await db.connect();
         try {
             await transaction.query('BEGIN');
             // insert user
-            const result = await InsertData('Users', req as any , transaction);
+            const result = await InsertData(table, req as any , transaction);
 
             //Generate Token ใหม่
             const accessToken = HelperService.genToken(result.data.user_id);
@@ -59,7 +60,7 @@ export const SiginService = {
             
             console.log(`--- status : ${result.status} ---`);
 
-            await ActivityLogService.Insert_logAction(result.data.user_id, 'SIGIN', 'User', result.data.user_id, {
+            await ActivityLogService.Insert_logAction(result.data.user_id, action , 'User', result.data.user_id, {
                 university_id : university_id,
                 role_at_login : profile.role,
                 ip_address : ip,

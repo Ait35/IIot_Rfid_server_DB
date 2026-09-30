@@ -1,7 +1,7 @@
 import { Router , Request , Response} from 'express';
 import{authMiddleware } from '../../Middlewares/auth.middleware.js';
-import { MPost_control ,Mqtt_updata_control } from '../../Controller/Mqtt_control/Write_control.js';
-import { MGet_control } from '../../Controller/Mqtt_control/Read_control.js';
+import { MPost_control ,Mqtt_updata_control } from '../../Controller/Mqtt_control/write.control.js';
+import { MGet_control } from '../../Controller/Mqtt_control/read.control.js';
 
 const router = Router();
 

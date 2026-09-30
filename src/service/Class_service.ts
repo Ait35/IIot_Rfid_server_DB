@@ -1,10 +1,11 @@
-import { MqttWrite } from './mqttService/Write_mqtt.js';
-import { MqttRead } from './mqttService/Read_mqtt.js';
+import { MqttWrite } from './mqttService/write.mqtt.js';
+import { MqttRead } from './mqttService/read.mqtt.js';
 import Service from './helper_func.js';
 import { Query } from '../Repository/helperQuery.js';
 import { DeviceWrite } from './DeviceService/write.device.js';
-import { GroupWrite } from './GroupService/Write_mqtt.js';
-// import { updateGroup } from '../Repository/updataQuery.js';
+import { DeviceRead } from './DeviceService/read.device.js';
+import { GroupWrite } from './GroupService/writ.group.js';
+import { GroupRead } from './GroupService/read_group.js';
 
 export const Helper = {
     Service : Service,
@@ -29,7 +30,7 @@ export const  MqttService = {
 
 export const  GroupService = {
     GroupWrite : GroupWrite,
-    // GroupRead : GroupRead
+    GroupRead : GroupRead
 }
 // export const  GroupQuery = {
 //     QueryWrite : 
@@ -44,7 +45,8 @@ export const  GroupService = {
 // }
 
 export const  DeviceService = {
-    DeviceWrite : DeviceWrite
+    DeviceWrite : DeviceWrite,
+    DeviceRead : DeviceRead
 }
 // export const  DeviceQuery = {
 //     QueryWrite : 

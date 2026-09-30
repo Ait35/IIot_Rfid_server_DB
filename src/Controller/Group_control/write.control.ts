@@ -45,8 +45,8 @@ export const Group_update_control = async (req:Request, res:Response) => {
         return res.status(400).json({error: 'Missing user id'});
     }
     if(!group_id){
-        console.log('Missing data');
-        return res.status(400).json({error: 'Missing data'});
+        console.log('Missing group id');
+        return res.status(400).json({error: 'Missing group id'});
     }
     if(!group_name && is_delete === undefined){
         console.log('Missing data');

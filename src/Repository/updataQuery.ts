@@ -4,7 +4,7 @@ export const updateData = async (
     tableName:string ,
     target_name_id:string ,
     target_id:number ,
-    user_req: Record<string, string | number | boolean>, 
+    user_req: Record<any, any>,
     transaction: PoolClient) => 
     {
         console.log('----- API action: Update Query -----');

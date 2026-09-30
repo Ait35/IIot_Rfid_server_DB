@@ -9,7 +9,7 @@ export const MGet_control = async (req:Request, res:Response) => {
     const limit = parseInt(req.query.limit as string) || 10;
 
     const ipAddress = req.ip || 'Unknown IP';
-    const userAgent = req.headers['user-agent'] || 'Unknown Device';
+    const userAgent = req.headers['user-agent'] || 'Unknown Mqtt';
     
     if(!userId){
         console.log('Missing user id');

@@ -2,7 +2,7 @@ import { PoolClient } from 'pg';
 
 export const InsertData = async (
     tableName:string ,
-    user_req: Record<string, string | number | boolean>, 
+    user_req: Record<any, any>,
     transaction: PoolClient) => 
     {
         console.log('----- API action: Insert Mqtt Query -----');

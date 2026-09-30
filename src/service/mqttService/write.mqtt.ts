@@ -30,15 +30,16 @@ export const MqttWrite = {
             ...(User_Mqtt && {user_mqtt : User_Mqtt}),
             ...(Pass_Mqtt && {pass_mqtt : Pass_Mqtt}),
         }
-
+        const action = 'INSERT';
+        const table= 'mqtt';
         const transaction = await db.connect();
 
         try{
             await transaction.query('BEGIN');
-            const res_query = await InsertData( 'mqtt', req as any , transaction);
+            const res_query = await InsertData( table, req as any , transaction);
             console.log('----- Insert Successful! -----');
 
-            await ActivityLogService.Insert_logAction(Number(by_user_id), 'INSERT', 'Mqtt', res_query.data.Mqtt_id, {
+            await ActivityLogService.Insert_logAction(Number(by_user_id), action, table, res_query.data.mqtt_id, {
                 topic : topic,
                 config_group : group_id,
                 ip_address : ip,
@@ -64,7 +65,7 @@ export const MqttWrite = {
         group_id: number | undefined,
         user_mqtt: string | undefined,
         pass_mqtt: string | undefined,
-        ip: string, 
+        ip_address: string, 
         userAgent: string,
         is_delete: boolean | undefined)
     {
@@ -86,28 +87,36 @@ export const MqttWrite = {
         console.log(user_req);
         if(!db) return { success: false, status: 500, error: 'Database not connected' };
         let result : any;
+        const table = 'mqtt';
+        const action = 'UPDATE';
         const transaction = await db.connect();
         try{
             await transaction.query('BEGIN');
 
             if(is_delete !== null && is_delete !== undefined){
-                result = await Helper.Query.Tran_SetDelete('mqtt', 'By_user_id', Number(by_user_id) , is_delete , transaction);
+                result = await Helper.Query.Tran_SetDelete(table , 'mqtt_id', mqtt_id , is_delete , transaction);
+                console.log(` ✅ ${is_delete ? 'Delete' : 'Restore'} Successful! `);
+
+                await ActivityLogService.Insert_logAction( Number(by_user_id), is_delete ? 'DELETE':'RESTORE' ,table , mqtt_id, {
+                    is_delete : is_delete,
+                    ip_address : ip_address,
+                    user_agent : userAgent
+                }, transaction);
             }else{
-                result = await updateData('mqtt', 'mqtt_id', mqtt_id , user_req as any , transaction);
+                result = await updateData(table, 'mqtt_id', mqtt_id , user_req as any , transaction);
                 console.log('----- Update Successful! -----');
+
+                await ActivityLogService.Insert_logAction(Number(by_user_id), action , 'Mqtt', mqtt_id, {
+                    topic : topic,
+                    group_id: group_id,
+                    user_mqtt: user_mqtt,
+                    pass_mqtt: pass_mqtt,
+                    ip_address : ip_address,
+                    user_agent : userAgent
+                }, transaction);
             }
-            
-            await ActivityLogService.Insert_logAction(Number(by_user_id), 'UPDATE', 'Mqtt', mqtt_id, {
-                topic : topic,
-                group_id: group_id,
-                user_mqtt: user_mqtt,
-                pass_mqtt: pass_mqtt,
-                ip_address : ip,
-                user_agent : userAgent
-
-            }, transaction);
-
             await transaction.query('COMMIT');
+            
             console.log('----- Add System Log Successful! -----');
             return result;
         }catch(error : any){
