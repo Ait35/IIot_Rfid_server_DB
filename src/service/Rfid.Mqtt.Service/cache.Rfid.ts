@@ -48,11 +48,11 @@ export const cache_Rfid = async (topic : string, message : string) => {
             return await Helper.Service.executeWithLog('Insert log_rfid', 'log_rfid', 'INSERT', null ,
                 async (transaction: PoolClient)=>{
                     logOJB.epc_id = cache_result.data.epc_id;
-                    await InsertData('log_rfid', logOJB, transaction);
+                    const insert_log= await InsertData('log_rfid', logOJB, transaction);
 
                     return {
                         result: cache_result,
-                        recordId: cache_result.data.epc_id, // ส่ง ID กลับไปให้ Helper ทำ Log
+                        recordId: insert_log.data.log_id , // ส่ง ID กลับไปให้ Helper ทำ Log
                         logPayload: { 
                             device_id: payload.device_id,
                             ip_address: payload.ip, 
