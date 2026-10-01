@@ -1,3 +1,4 @@
+import { PoolClient } from 'pg';
 import { db } from '../Infra/connect_db.js';
 
 export const getPage = async (
@@ -45,8 +46,15 @@ export const getPage = async (
         }
     }
 
-export const getData = async (tableName:string , where : string , value:string | number ,has_is_delete:boolean) => {
+export const getData = async (
+    tableName:string , 
+    where : string , 
+    value:string | number ,
+    has_is_delete:boolean , 
+    transaction?: PoolClient) => 
+    {
         console.log('----- API action: getDataOne  -----');
+
         if (!db) {
             return { success: false, status: 500, error: 'Database not connected' };
         }
@@ -66,10 +74,10 @@ export const getData = async (tableName:string , where : string , value:string |
             sql = `SELECT * FROM ${tableName} WHERE ${where} = $1;`;
         }
         try { 
-            const result = await db.query(sql, [value]);
+            const result = transaction ? await transaction.query(sql, [value]) : await db.query(sql, [value]);
 
             if (result.rowCount === 0) {
-                return { success: false, status: 404, error: 'Record not found' };
+                return { success: true, status: 404, data: null };
             }
             console.log('---- Get Successful! -----');
             return { success: true, status: 200, data: result.rows[0] };

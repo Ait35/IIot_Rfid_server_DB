@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import {PoolClient} from 'pg';
 import { db } from '../Infra/connect_db.js';
 import { ActivityLogService } from '../Repository/Activity_Log/ActivityQuery.js';
+import { QueryRedis } from '../Infra/Redis/cache.js';
+import { getData } from '../Repository/ReadQuery.js';
 
 export interface ITokenPayload {
     user_id: string; //ให้ สัญญาวาเป็นรูปแบบ ojb นี้แน่นอน
@@ -76,10 +78,10 @@ const Service = {
         actionName: string, // ชื่อ API เอาไว้ log console
         table: string,
         action: 'INSERT' | 'UPDATE' | 'DELETE' | 'RESTORE',
-        by_user_id: string,
+        by_user_id: string | null,
         Callfunction: (transaction: PoolClient) => Promise<{ result: any; recordId: number; logPayload: any }> //Promise คือ async ที่จะ return มาให้ สัญญาวาเป็น Promise
     ) {
-        console.log(`----- API action: ${actionName} -----`);
+        console.log(`----- action: ${actionName} -----`);
         if (!db) return { success: false, status: 500, error: 'Database not connected' };
 
         const transaction = await db.connect();
@@ -89,7 +91,7 @@ const Service = {
             const { result, recordId, logPayload } = await Callfunction(transaction);
 
             await ActivityLogService.Insert_logAction(
-                Number(by_user_id),
+                Number(by_user_id) || null, // ถ้า by_user_id เป็น null ให้ส่ง null ไป
                 action,
                 table,
                 recordId, //มันคือ target_id 
@@ -98,7 +100,8 @@ const Service = {
             );
 
             await transaction.query('COMMIT');
-            console.log(`----- ${action} ${table} Successful! -----`);
+            console.log(`✅ action: Add system log Successful!`);
+            console.log(`✅ ${action} ${table} Successful!`);
             
             return result;
         } catch (error) {
@@ -107,6 +110,63 @@ const Service = {
             throw error; 
         } finally {
             transaction.release();
+        }
+    },
+    async ChackCacheAndSave (prefix : string, cacheKey : string, DBtable : string , DBcolumn : string, 
+        callfunction?: (data: any) => Promise<{ success: boolean; status: number; data?: any; error?: string }>) {
+        console.log('----- action: chack Cache -----');
+        try{
+            const cache_result = await QueryRedis.getCache(cacheKey , prefix);
+
+            if(!cache_result.success){
+                console.log('----- Error while checking cache -----');
+                return {success: false, status: 500, error: 'Error while checking cache' };
+            }
+
+            if (cache_result.success && cache_result.status === 404) {
+                console.log('----- Cache Miss: Call to Database -----');
+                const db_data : any = await getData(DBtable, DBcolumn, cacheKey, true);
+                //select * from map_tag where epc = cacheKey and is_delete = false
+
+                if(db_data && db_data.status === 404){
+                    console.log('----- Data not found in database -----');
+                    return {success: false, status: 404, error: 'Data not found' };
+                }
+                if(!db_data){
+                    console.log('----- Error while fetching data from database -----');
+                    return {success: false, status: 500, error: 'Error while fetching data from database' };
+                }
+
+                let CacheData = db_data.data;
+                if(callfunction){
+                    console.log('----- Call custom function -----');
+                    const customResult = await callfunction(CacheData); //getData กรณีที่ต้องการ map key กับข้อมูลในตารางอื่น
+                    if(!customResult.success){
+                        console.log('----- Error while calling custom function -----');
+                        return {success: false, status: 500, error: 'Error while calling custom function' };
+                    }
+                    if(customResult.data === null){
+                        console.log('----- Custom function returned no data -----');
+                        return {success: false, status: 404, error: 'Data not found' };
+                    }
+                    CacheData = customResult.data;
+                }
+                const saveCache = await QueryRedis.setCache(cacheKey, prefix, CacheData);
+
+                if(!saveCache.success){
+                    console.log('----- Error while saving data to cache -----');
+                    return {success: false, status: 500, error: 'Error while saving data to cache' };
+                }else{
+                    return {success: true, status: 200, data: CacheData};
+                }
+            }
+            
+            console.log('----- Cache Hit! -----');
+            console.log(cache_result.data);
+            return {success: true, status: 200, data: cache_result.data };
+        }catch(error){
+            console.error('Error occurred while checking cache or fetching data from database:', error);
+            throw error
         }
     }
 }

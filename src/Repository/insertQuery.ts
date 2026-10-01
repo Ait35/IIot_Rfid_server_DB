@@ -5,7 +5,7 @@ export const InsertData = async (
     user_req: Record<any, any>,
     transaction: PoolClient) => 
     {
-        console.log('----- API action: Insert Mqtt Query -----');
+        console.log(`----- API action: Insert ${tableName} -----`);
         let sql = `INSERT INTO ${tableName} (`;
         let sql_values = ` VALUES (`;
         let values : any[] = [];

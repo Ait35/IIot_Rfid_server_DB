@@ -6,8 +6,9 @@ import cors from 'cors';
 import { connect_DB } from './Infra/connect_db.js';
 import redis from './Infra/Redis/connect_redis.js';
 import { initMqtt } from './Infra/Mqtt.infra.js';
-import { MainLogService } from './service/LogMqttService/write.Log.js';
+import { cache_Rfid } from './service/Rfid.Mqtt.Service/cache.Rfid.js';
 import Router from './Router/Export_router.js';
+import { RfidLogService } from './service/Rfid.Mqtt.Service/write.Log.js';
 
 const app = express();
 
@@ -25,7 +26,7 @@ async function startServer() {
 
     await initMqtt.connect();
 
-    initMqtt.callbackMessage( MainLogService.write_log);
+    initMqtt.callbackMessage(cache_Rfid);
 
     app.listen(process.env.PORT, () => {
       console.log('--- Server is running on port', process.env.PORT, '---');
