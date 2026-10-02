@@ -102,7 +102,7 @@ export const Query = {
         const sql = `
             UPDATE ${tableName} SET  is_delete = $2
             WHERE ${where} = $1
-            RETURNING is_delete;
+            RETURNING *;
             `;
         const values = [id , is_delete];
 
@@ -114,7 +114,7 @@ export const Query = {
             }else{
                 console.log('---- Restore Successful! -----');
             }
-            return { success: true, status: 200, is_delete : result.rows[0].is_delete };
+            return { success: true, status: 200, data : result.rows[0]};
         }catch (error) {
             if(is_delete){
                 console.log('---- Delete failed! -----');
@@ -134,7 +134,7 @@ export const Query = {
         const sql = `
             UPDATE ${tableName} SET  is_delete = $2
             WHERE ${where} = $1
-            RETURNING is_delete;
+            RETURNING *;
             `;
         const values = [id , is_delete];
 
@@ -150,7 +150,7 @@ export const Query = {
             }else{
                 console.log('---- Restore Successful! -----');
             }
-            return { success: true, status: 200, is_delete : result.rows[0].is_delete };
+            return { success: true, status: 200, data : result.rows[0] };
         }catch (error) {
             if(is_delete){
                 console.log('---- Delete failed! -----');

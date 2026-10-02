@@ -1,4 +1,4 @@
-// import { MqttQuery } from '../Class_service.js'
+import { publishMessage } from '../../Infra/Mqtt.infra.js';
 import { db } from '../../Infra/connect_db.js';
 import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
 import { Helper } from '../Class_service.js';
@@ -116,7 +116,11 @@ export const MqttWrite = {
                 }, transaction);
             }
             await transaction.query('COMMIT');
-            
+
+            const topicCMD = `${process.env.MQTT_TOPIC_PUBLISH}/group${result.data.group_id}`;
+            console.log('📩 TopicCam : ', topicCMD);
+            await publishMessage(topicCMD, "disconnected");
+
             console.log('----- Add System Log Successful! -----');
             return result;
         }catch(error : any){

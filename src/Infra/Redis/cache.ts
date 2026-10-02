@@ -50,5 +50,20 @@ export const QueryRedis = {
              console.error('Redis Get Error:', error);
              return { success: false, status: 500, error: 'Failed to get Redis' };
         }
+    },
+    async delCache(IncomeKey: string , Prefix : string) {
+        console.log(`----- API action: del${Prefix}Cache  -----`);
+        if (!redis) {
+            return { success: false, status: 500, error: 'Redis not connected' };
+        }
+        try {
+            const key = `${Prefix}:${IncomeKey}`;
+            const result = await redis.del(key);
+            console.log(`Deleted Cache for ${key} -> result:`, result);
+            return { success: true, status: 200, data: result };
+        } catch (error) {
+            console.error('Redis Del Error:', error);
+            return { success: false, status: 500, error: 'Failed to delete Redis' };
+        }
     }
 }

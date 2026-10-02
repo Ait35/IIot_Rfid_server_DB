@@ -62,7 +62,7 @@ export const device_update_control = async (req:Request, res:Response) => {
             console.log(group_res);
             return res.status(group_res.status).json(group_res);
         }
-        console.log('✅ Update Device Successful!');
+
         return res.status(200).json(group_res);
     } catch (error) {
         console.error('error in device control');

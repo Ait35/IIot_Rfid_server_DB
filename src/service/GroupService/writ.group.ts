@@ -1,6 +1,3 @@
-// import { GroupQuery } from '../Class_service.js'
-import { db } from '../../Infra/connect_db.js';
-import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
 import { Helper } from '../Class_service.js';
 import { InsertData } from '../../Repository/insertQuery.js';
 import { updateData } from '../../Repository/updataQuery.js';

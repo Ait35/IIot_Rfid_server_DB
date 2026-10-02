@@ -1,7 +1,6 @@
 // import { DeviceQuery } from '../Class_service.js'
 import { Helper } from '../Class_service.js';
-import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
-import { db } from '../../Infra/connect_db.js';
+import { publishMessage } from '../../Infra/Mqtt.infra.js';
 import { InsertData } from '../../Repository/insertQuery.js';
 import { updateData } from '../../Repository/updataQuery.js';
 
@@ -94,6 +93,10 @@ export const DeviceWrite = {
                 } else {
                     result = await updateData('device_info', 'device_id', device_id, req, transaction);
                 }
+               
+                const topicCMD = `${process.env.MQTT_TOPIC_PUBLISH}/group${result.data.group_id}/${result.data.mac}`;
+                console.log('📩 TopicCam : ', topicCMD);
+                await publishMessage(topicCMD, "disconnected");
                 return { 
                     result, 
                     recordId: device_id, 

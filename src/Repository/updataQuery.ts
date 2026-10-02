@@ -19,7 +19,7 @@ export const updateData = async (
             values.push(user_req[key]);
         });
         values.push(target_id);
-        sql = sql.slice(0, -1) + ` WHERE is_delete = FALSE AND ${target_name_id} = $${current_index+1};`;
+        sql = sql.slice(0, -1) + ` WHERE is_delete = FALSE AND ${target_name_id} = $${current_index+1} RETURNING *`;
         console.log('SQL :' , sql);
         console.log('values :' , values);
         try{

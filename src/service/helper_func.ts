@@ -38,7 +38,7 @@ const Service = {
     async readAndWriteLog (
         actionName : string,
         table : string,
-        by_user_id: number,
+        by_user_id: number | null,
         Callfunction:() => Promise<{ result: any; logPayload: any }>)
     {
         console.log(`----- API action: ${actionName} -----`);
@@ -55,7 +55,7 @@ const Service = {
             });
 
             const System_log = await ActivityLogService.Insert_logAction(
-                Number(by_user_id),
+                Number(by_user_id) || null,
                 'GET',
                 table, 
                 null, 

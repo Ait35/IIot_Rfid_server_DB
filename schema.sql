@@ -36,7 +36,7 @@ CREATE TABLE Device_info (
     Device_name  VARCHAR(100),
     device_type  VARCHAR(20) NOT NULL,       -- 'RFID' หรือ 'CAM'
     Group_id     INT NOT NULL,              
-    By_user_id   INT NOT NULL,
+    By_user_id   INT ,
     mac          VARCHAR(17) NOT NULL UNIQUE,
     IP           VARCHAR(45) NOT NULL,
     subnet       VARCHAR(45) NOT NULL,

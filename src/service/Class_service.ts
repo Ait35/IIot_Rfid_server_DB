@@ -6,6 +6,7 @@ import { DeviceWrite } from './DeviceService/write.device.js';
 import { DeviceRead } from './DeviceService/read.device.js';
 import { GroupWrite } from './GroupService/writ.group.js';
 import { GroupRead } from './GroupService/read_group.js';
+import { Map_tagWrite } from './MapService/write.tag.js';
 
 export const Helper = {
     Service : Service,
@@ -54,3 +55,7 @@ export const  DeviceService = {
 //         insertDevice
 //     }
 // }
+export const  MapTagService = {
+    Map_tagWrite : Map_tagWrite,
+    // Map_tagRead : Map_tagRead
+}

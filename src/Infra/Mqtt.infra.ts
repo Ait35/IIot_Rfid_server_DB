@@ -23,7 +23,8 @@ export const initMqtt =  {
         client = mqtt.connect(brokerUrl, options);
 
         client.on('connect', () => {
-            client.subscribe(process.env.MQTT_TOPIC_HEADER as string);
+            client.subscribe(process.env.MQTT_TOPIC_STATUS as string);
+            client.subscribe(process.env.MQTT_TOPIC_RFID as string);
             console.log('✅ MQTT Connected successfully');
         });
 
@@ -46,7 +47,8 @@ export const initMqtt =  {
         if (!client) {
             throw new Error("❌ MQTT Client is not connected");
         }
-        console.log('📡 Listening to topic: ' ,process.env.MQTT_TOPIC_HEADER as string);
+        console.log('📡 Listening to topic: ' ,process.env.MQTT_TOPIC_STATUS as string);
+        console.log('📡 Listening to topic: ' ,process.env.MQTT_TOPIC_RFID as string);
         client.on('message', (topic, message) => {
             console.log(`📩 [Device: ${topic}] Data:`, message.toString());
             ServiceCall(topic, message.toString()); 
@@ -54,31 +56,19 @@ export const initMqtt =  {
     }
 }
 
-
-//   private handleMessage(topic: string, message: Buffer) {
-//     try {
-//       const topicParts = topic.split('/'); 
-//       const deviceId = topicParts[1];
-      
-//       const payload = JSON.parse(message.toString());
-
-//       console.log(`📩 [Device: ${deviceId}] Data:`, payload);
-      
-//     } catch (error) {
-//       console.error('❌ Error parsing MQTT message:', error);
-//     }
-//   }
-
-//   // เผื่ออนาคตหน้าเว็บอยากกดปุ่มสั่งปิด-เปิดไฟที่ ESP32
-//   public publishCommand(deviceId: string, command: object) {
-//     if (!this.client?.connected) {
-//       console.error('⚠️ Cannot publish: MQTT is not connected');
-//       return;
-//     }
-//     const targetTopic = `sensor/${deviceId}/cmd`;
-//     this.client.publish(targetTopic, JSON.stringify(command));
-//   }
-// }
-
-// // Export เป็น Singleton Instance (เรียกใช้ตัวเดิมเสมอ ไม่ต้อง new ใหม่)
-// export const mqttService = new MqttService();
+export async function publishMessage(topic: string, message: string) {
+    console.log(`📤 Publishing message to topic: ${topic}, Message: ${message}`);
+    if (!client) {
+        console.error("❌ No MQTT client connected");
+        return;
+    }
+    
+    // สั่ง publish 
+    client.publish(topic, message, (err) => {
+        if (err) {
+            console.error(`❌ Error publishing message: ${err}`);
+        } else {
+            console.log(`📤✅[Published success!] Topic: ${topic}, Message: ${message}`);
+        }
+    });
+};
