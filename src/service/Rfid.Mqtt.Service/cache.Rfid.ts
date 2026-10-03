@@ -79,16 +79,18 @@ export const cache_Rfid = async (topic : string, message : string) => {
         };
     }
 
-export const insertRfidLog = async ( payload: any, dataOJB: C_ECP_Tag ,logOJB : C_Log, TopicCam: string ) => {
+const insertRfidLog = async ( payload: any, dataOJB: C_ECP_Tag ,logOJB : C_Log, TopicCam: string ) => {
         try{
 
-        const cache_result = await Helper.Service.ChackCacheAndSave('Rfid', dataOJB.epc, 'map_tag', 'epc');
+        const cache_result = await Helper.Service.ChackCacheAndSave('epc', dataOJB.epc, 'map_tag', 'epc');
         if(cache_result.success){
             console.log('----- Data in found in DB or cache go triggerCAM -----');
             await triggerCAM(TopicCam , dataOJB.epc);
             
             return await Helper.Service.executeWithLog('Insert log_rfid', 'log_rfid', 'INSERT', null ,
                 async (transaction: PoolClient)=>{
+                    //เอา ecp id ที่เจอใน cache โดยที่ไม่ต้องลง DB เพื่อไปดูว่า ecp นี้ id, tag อะไร
+                    //แต่ถ้าไม่เจอใน cache จะต้องลง DB ใน ChackCacheAndSave มีการหาใน DB อยู่แล้ว แล้ว save ลง cache ไปเลย
                     logOJB.epc_id = cache_result.data.epc_id;
                     const insert_log= await InsertData('log_rfid', logOJB, transaction);
 
@@ -103,8 +105,8 @@ export const insertRfidLog = async ( payload: any, dataOJB: C_ECP_Tag ,logOJB : 
                     };
                 }
             );
-        } //ถ้ามันสำเร็จ แสดงว่ามีข้อมูลใน DB มันจะ return
-
+        }  
+        //กรณีที่ ecp ไม่พบใน cache, DB มันจะ insert ecp
         console.log('----- Data not found in DB or cache -----');
         return await Helper.Service.executeWithLog('Insert map_Tag', 'map_tag', 'INSERT', null , 
             async (transaction: PoolClient)=>{
@@ -112,7 +114,7 @@ export const insertRfidLog = async ( payload: any, dataOJB: C_ECP_Tag ,logOJB : 
                 logOJB.epc_id = res_query.data.epc_id;
                 const insert_log = await InsertData('log_rfid', logOJB, transaction);
                 
-                await QueryRedis.setCache(dataOJB.epc, 'Rfid', res_query.data);
+                await QueryRedis.setCache(dataOJB.epc, 'ecp', res_query.data);
                 console.log('✅ Insert log_rfid Successful!');
                 await ActivityLogService.Insert_logAction(null, 'INSERT', 'log_rfid', insert_log.data.log_id, {
                     device_id: payload.device_id,

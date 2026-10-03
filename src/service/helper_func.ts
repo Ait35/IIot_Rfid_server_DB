@@ -112,7 +112,7 @@ const Service = {
             transaction.release();
         }
     },
-    async ChackCacheAndSave (prefix : string, cacheKey : string, DBtable : string , DBcolumn : string, 
+    async ChackCacheAndSave (prefix : string, cacheKey : string, DBtable : string , DBcolumn : string, has_delete : boolean = true,
         callfunction?: (data: any) => Promise<{ success: boolean; status: number; data?: any; error?: string }>) {
         console.log('----- action: chack Cache -----');
         try{
@@ -125,7 +125,7 @@ const Service = {
 
             if (cache_result.success && cache_result.status === 404) {
                 console.log('----- Cache Miss: Call to Database -----');
-                const db_data : any = await getData(DBtable, DBcolumn, cacheKey, true);
+                const db_data = await getData(DBtable, DBcolumn, cacheKey, has_delete);
                 //select * from map_tag where epc = cacheKey and is_delete = false
 
                 if(db_data && db_data.status === 404){

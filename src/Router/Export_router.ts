@@ -6,6 +6,7 @@ import path_group from './path/path.grop.js';
 import path_device from './path/path.device.js';
 import path_mapTag from './path/path.mapTag.js';
 import path_dashboard from './path/path.dashboard.js';
+import path_upload_img from './path/path_upload.img.js';
 
 
 const router = Router();
@@ -15,6 +16,7 @@ router.use(path_group);
 router.use(path_device);
 router.use(path_mapTag);
 router.use(path_dashboard);
+router.use(path_upload_img);
 
 //admin test ค่อยลบ
 router.use(Automated_Test);

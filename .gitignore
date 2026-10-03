@@ -1,6 +1,8 @@
 .env
 node_modules/
 .vscode/
+public/uploadsImg/*
+!public/uploadsImg/dummy.txt
 # ดักไว้ เพราะ มันอาจจะอย่ใน ram
 dist/
 build/

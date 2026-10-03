@@ -8,12 +8,18 @@ import redis from './Infra/Redis/connect_redis.js';
 import { initMqtt } from './Infra/Mqtt.infra.js';
 import { cache_Rfid } from './service/Rfid.Mqtt.Service/cache.Rfid.js';
 import Router from './Router/Export_router.js';
-import { RfidLogService } from './service/Rfid.Mqtt.Service/write.Log.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+// เปิดให้ Frontend เข้าถึงไฟล์รูปภาพผ่าน URL /uploads/...
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploadsImg')));
 app.use(Router);
 
 async function startServer() {
