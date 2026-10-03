@@ -7,6 +7,7 @@ import { DeviceRead } from './DeviceService/read.device.js';
 import { GroupWrite } from './GroupService/writ.group.js';
 import { GroupRead } from './GroupService/read_group.js';
 import { Map_tagWrite } from './MapService/write.tag.js';
+import { TagRead } from './MapService/read.tag.js';
 
 export const Helper = {
     Service : Service,
@@ -57,5 +58,5 @@ export const  DeviceService = {
 // }
 export const  MapTagService = {
     Map_tagWrite : Map_tagWrite,
-    // Map_tagRead : Map_tagRead
+    Map_tagRead : TagRead
 }

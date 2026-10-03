@@ -5,6 +5,7 @@ interface user_req {
     tag?: string;
     status?: string; 
     is_delete?: boolean;
+    by_user_id: string;
 }
 
 export const Map_tagWrite = {
@@ -23,6 +24,7 @@ export const Map_tagWrite = {
             ...(tag && {tag}),
             ...(status && {status}),
             ...(is_delete && {is_delete}),
+            by_user_id : by_user_id
         };
 
         return await Helper.Service.executeWithLog(

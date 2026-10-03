@@ -83,9 +83,9 @@ const insertRfidLog = async ( payload: any, dataOJB: C_ECP_Tag ,logOJB : C_Log, 
         try{
 
         const cache_result = await Helper.Service.ChackCacheAndSave('epc', dataOJB.epc, 'map_tag', 'epc');
+        await triggerCAM(TopicCam , dataOJB.epc);
         if(cache_result.success){
             console.log('----- Data in found in DB or cache go triggerCAM -----');
-            await triggerCAM(TopicCam , dataOJB.epc);
             
             return await Helper.Service.executeWithLog('Insert log_rfid', 'log_rfid', 'INSERT', null ,
                 async (transaction: PoolClient)=>{
