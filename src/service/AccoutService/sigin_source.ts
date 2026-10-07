@@ -4,6 +4,7 @@ import { Helper } from '../Class_service.js';
 import HelperService from '../helper_func.js';
 import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
 import { InsertData } from '../../Repository/insertQuery.js';
+import { QueryRedis } from '../../Infra/Redis/cache.js';
 
 interface user_req {
     university_id: string;
@@ -57,6 +58,7 @@ export const SiginService = {
             //Generate Token ใหม่
             const accessToken = HelperService.genToken(result.data.user_id);
             await Helper.Query.Tran_updateToken(result.data.user_id , accessToken, transaction);
+            await QueryRedis.setCache(String(result.data.user_id), 'session', { token: accessToken });
             
             console.log(`--- status : ${result.status} ---`);
 

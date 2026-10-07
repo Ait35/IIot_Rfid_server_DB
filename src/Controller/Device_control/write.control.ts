@@ -38,7 +38,7 @@ export const device_update_control = async (req:Request, res:Response) => {
     console.log('----- API action: updata device  control -----');
     const userId = (req as any).payload.user_id;
     const {device_id, device_name ,device_type, group_id, ip,subnet,gate_way,
-        timestart,up_time,local,is_delete,status,key_api} = req.body;
+        last_active_at,hw_uptime ,local,is_delete,status,key_api} = req.body;
     const ipAddress = req.ip || 'Unknown IP';
     const userAgent = req.headers['user-agent'] || 'Unknown Device';
 
@@ -50,14 +50,14 @@ export const device_update_control = async (req:Request, res:Response) => {
         console.log('Missing id data');
         return res.status(400).json({error: 'Missing id data'});
     }
-    if( !device_name && !device_type && !group_id && !ip && !subnet && !gate_way && !timestart
-        && !up_time && !local && status === undefined && !key_api && is_delete === undefined){
+    if(!device_name && !device_type && !group_id && !ip && !subnet && !gate_way && !last_active_at
+        && !hw_uptime && !local && status === undefined && !key_api && is_delete === undefined){
         console.log('Missing data');
         return res.status(400).json({error: 'Missing data'});
     }
 
     try {
-        const group_res = await DeviceService.DeviceWrite.update_device( device_id , device_name , device_type , group_id , ip , subnet , gate_way , timestart , up_time , local , is_delete , status , key_api , userId , ipAddress , userAgent);
+        const group_res = await DeviceService.DeviceWrite.update_device( device_id , device_name , device_type , group_id , ip , subnet , gate_way , last_active_at , hw_uptime , local , is_delete , status , key_api , userId , ipAddress , userAgent);
         if(!group_res.success){
             console.log(group_res);
             return res.status(group_res.status).json(group_res);

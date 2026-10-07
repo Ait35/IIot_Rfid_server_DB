@@ -53,6 +53,7 @@ export const initMqtt =  {
             console.log(`📩 [Device: ${topic}] Data:`, message.toString());
             ServiceCall(topic, message.toString()); 
         });
+        console.log('==============================================');
     }
 }
 

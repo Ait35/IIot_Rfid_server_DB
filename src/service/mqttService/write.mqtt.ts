@@ -119,7 +119,7 @@ export const MqttWrite = {
 
             const topicCMD = `${process.env.MQTT_TOPIC_PUBLISH}/group${result.data.group_id}`;
             console.log('📩 TopicCam : ', topicCMD);
-            await publishMessage(topicCMD, "disconnected");
+            await publishMessage(topicCMD, JSON.stringify({CMD : "disconnect"}));
 
             console.log('----- Add System Log Successful! -----');
             return result;

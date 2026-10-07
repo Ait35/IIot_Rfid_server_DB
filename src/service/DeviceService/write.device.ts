@@ -2,7 +2,7 @@
 import { Helper } from '../Class_service.js';
 import { publishMessage } from '../../Infra/Mqtt.infra.js';
 import { InsertData } from '../../Repository/insertQuery.js';
-import { updateData } from '../../Repository/updataQuery.js';
+import { updateData , updateAndGet1Table} from '../../Repository/updataQuery.js';
 
 interface user_req {
     by_user_id?: string;
@@ -13,8 +13,8 @@ interface user_req {
     ip?: string;
     subnet?: string;
     gate_way?: string;
-    timestart?: string;
-    up_time?: string;
+    last_active_at?: string;
+    hw_uptime?: number;
     local?: string;
     is_delete?: boolean;
     status?: boolean;
@@ -54,8 +54,8 @@ export const DeviceWrite = {
         ip:string | undefined,
         subnet:string | undefined,
         gate_way:string | undefined,
-        timestart:string | undefined,
-        up_time:string | undefined,
+        last_active_at: string | undefined,
+        hw_uptime: number | undefined,
         local:string | undefined,
         is_delete:boolean | undefined,
         status:boolean | undefined,
@@ -73,8 +73,8 @@ export const DeviceWrite = {
             ...(ip !== undefined && {ip}),
             ...(subnet !== undefined && {subnet}),
             ...(gate_way !== undefined && {gate_way}),
-            ...(timestart !== undefined && {timestart}),
-            ...(up_time !== undefined && {up_time}),
+            ...(last_active_at !== undefined && {last_active_at}),
+            ...(hw_uptime !== undefined && {hw_uptime}),
             ...(local !== undefined && {local}),
             ...(is_delete !== undefined && {is_delete}),
             ...(status !== undefined && {status}),
@@ -91,12 +91,21 @@ export const DeviceWrite = {
                 if (is_delete !== undefined) {
                     result = await Helper.Query.Tran_SetDelete('device_info', 'device_id', device_id, is_delete, transaction);
                 } else {
-                    result = await updateData('device_info', 'device_id', device_id, req, transaction);
+                        // tableName:string ,
+                        // target_name_id:string ,
+                        // target_id:number ,
+                        // user_req: Record<any, any>,
+                        // tableName2:string ,
+                        // FK_name_id1:string ,
+                        // FK_name_id2:string ,
+                        // transaction: PoolClient) => 
+                    result = await updateAndGet1Table('device_info', 'device_id', device_id, req, 'mqtt', 'group_id', 'group_id', transaction);
                 }
                
-                const topicCMD = `${process.env.MQTT_TOPIC_PUBLISH}/group${result.data.group_id}/${result.data.mac}`;
+                const topicCMD = 
+                    `${process.env.MQTT_TOPIC_PUBLISH}/group${result.data.group_id}/${result.data.mac}/${result.data.topic}`;
                 console.log('📩 TopicCam : ', topicCMD);
-                await publishMessage(topicCMD, "disconnected");
+                await publishMessage(topicCMD, JSON.stringify({CMD : "disconnect"}));
                 return { 
                     result, 
                     recordId: device_id, 

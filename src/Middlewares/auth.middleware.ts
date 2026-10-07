@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import HelperService from '../service/helper_func.js';
+import { QueryRedis } from '../Infra/Redis/cache.js';
 
-export const authMiddleware = (req:Request, res:Response, next:NextFunction) => {;
+export const authMiddleware = async (req:Request, res:Response, next:NextFunction) => {;
     console.log('----- API action: authMiddleware -----');
     const authHeader = req.headers.authorization; //ดึงจาก http header
     // รูปแบบถูกต้อง (ขึ้นต้นด้วย Bearer) ไหม
@@ -20,12 +21,19 @@ export const authMiddleware = (req:Request, res:Response, next:NextFunction) => 
 
     try {
         const decoded = HelperService.verifyToken(token);
+        const redisSession = await QueryRedis.getCache(String((decoded as any).user_id), 'session');
+    
+        if (!redisSession.data) {
+            // กรณีที่ 1 ไม่มีใน Redis อาจจะหมดเวลา หรือกด Logout ไปแล้ว
+            return res.status(401).json({ message: 'Session expired or logged out' });
+        }
+        if (redisSession.data.token !== token) {
+            // กรณีที่ 2 Token ไม่ตรงกับใน Redis แปลว่ามีคนล็อกอินซ้อน Token นี้เลยกลายใช้ไม่ได้
+            return res.status(401).json({ message: 'Logged in from another device. You have been kicked out!' });
+        }
+
         (req as any).payload = decoded; //.ใส่ user id ที่เกะจาก token ไว้ที่ key payload (เป็น key ตั้งใหม่)
         console.log(decoded);
-        if(!decoded) {
-            console.log('unauthorized token');
-            return res.status(401).json({ message: 'unauthorized 401' });
-        }
 
         next();
     } catch (error) {

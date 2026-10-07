@@ -6,7 +6,7 @@ import cors from 'cors';
 import { connect_DB } from './Infra/connect_db.js';
 import redis from './Infra/Redis/connect_redis.js';
 import { initMqtt } from './Infra/Mqtt.infra.js';
-import { cache_Rfid } from './service/Rfid.Mqtt.Service/cache.Rfid.js';
+import { dispatch_message } from './service/Message.Mqtt.Service/dispatch.js';
 import Router from './Router/Export_router.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -32,7 +32,7 @@ async function startServer() {
 
     await initMqtt.connect();
 
-    initMqtt.callbackMessage(cache_Rfid);
+    initMqtt.callbackMessage(dispatch_message);
 
     app.listen(process.env.PORT, () => {
       console.log('--- Server is running on port', process.env.PORT, '---');

@@ -4,11 +4,11 @@ import { LoginQuery } from '../../Repository/loginQuery.js';
 import { ActivityLogService } from '../../Repository/Activity_Log/ActivityQuery.js';
 import { Helper } from '../Class_service.js';
 import  HelperService  from '../helper_func.js';
+import { QueryRedis } from '../../Infra/Redis/cache.js';
 
 export const LoginService = {
     async login (university_id : string, password : string , ip:string , userAgent:string) {
         console.log('----- API action: signin service -----');
-        let call_genToken = false;
 
         if (!db) {
             throw new Error('ไม่มีการเชื่อมต่อกับ DB ได้');
@@ -43,32 +43,30 @@ export const LoginService = {
                 console.log('You are not student of university :' , university_id);
                 return {success : false, status : 400, error: `You are not student of university : ${university_id}`};
             }
-            //เตรียม generate token ใหม่ ผ่าร transaction
-            call_genToken = true;
         }
-        let Token = userInfo.token;
         const transaction = await db.connect();
 
         try {
             await transaction.query('BEGIN');
 
-            if(call_genToken){
-                Token = HelperService.genToken(userInfo.user_id);
-                await Helper.Query.Tran_updateToken(userInfo.user_id , Token , transaction);
-                console.log('✅Update Token Successful!');
-            }
+            const Token = HelperService.genToken(userInfo.user_id);
+            await Helper.Query.Tran_updateToken(userInfo.user_id , Token , transaction);
+            // อัพเดต Redis เสมอ เพื่อให้ Session ถูกรีเฟรช และมีข้อมูลตรงกับ Token ปัจจุบัน
+            await QueryRedis.setCache(String(userInfo.user_id), 'session', { token: Token });
+            console.log('✅Update Token Successful!');
 
             await Helper.Query.Tran_updateTime('Users', 'last_login_at', 'user_id', userInfo.user_id, transaction);
 
             await ActivityLogService.Insert_logAction(userInfo.user_id, 'LOGIN', 'User', userInfo.user_id, {
                     university_id : userInfo.university_id,
                     role_at_login : userInfo.role,
-                    token_refreshed : call_genToken,
+                    token_refreshed : true,
                     ip_address : ip,
                     user_agent : userAgent
             } , transaction);
             
             await transaction.query('COMMIT');
+            
             console.log('----- Add System Log Successful! -----');
             return {success : true, status : 200, data : Token}; //return Json
         } catch (error) {
